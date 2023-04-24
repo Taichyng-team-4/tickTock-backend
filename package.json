@@ -1,0 +1,48 @@
+{
+  "name": "example",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "It's just an example",
+  "main": "app.js",
+  "scripts": {
+    "start:dev": "SET APP_ENV=dev&& nodemon server.js",
+    "start:prod": "nodemon server.js",
+    "test": "jest --coverage",
+    "test:dev": "jest --watch --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Taichyng-team-4/example.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Taichyng-team-4/example/issues"
+  },
+  "homepage": "https://github.com/Taichyng-team-4/example#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^6.7.0",
+    "express-session": "^1.17.3",
+    "helmet": "^6.0.1",
+    "hpp": "^0.2.3",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.0.2",
+    "multer": "^1.4.5-lts.1",
+    "socket.io": "^4.6.1",
+    "supertest": "^6.3.3",
+    "xss-clean": "^0.1.1"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "morgan": "^1.10.0",
+    "nodemon": "^2.0.21"
+  }
+}

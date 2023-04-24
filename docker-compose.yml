@@ -1,0 +1,17 @@
+#Dokcer compose version
+version: "3.9"
+
+# Docker Service
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - APP_ENV=${APP_ENV}
+      - PORT=${PORT}
+      - DB=${DB}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - FRONTEND_URL=${FRONTEND_URL}
