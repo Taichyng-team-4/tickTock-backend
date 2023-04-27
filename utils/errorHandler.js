@@ -1,13 +1,15 @@
 import AppError from "./appError.js";
 
 // Custom Error
-export const customErrorHandler = () => new AppError(`Your Error Message...`, 400);
+export const customErrorHandler = () =>
+  new AppError(`Your Error Message...`, 400, "your error code");
 
 // Handle dev error
 export const devErrorHandler = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
     error: err,
+    errorCode: err.errorCode,
     message: err.message,
     stack: err.stack,
   });
@@ -18,12 +20,17 @@ export const prodErrorHandler = (err, res) => {
   if (err.isOperational) {
     return res
       .status(err.statusCode)
-      .json({ status: err.status, message: err.message });
+      .json({
+        status: err.status,
+        message: err.message,
+        errorCode: err.errorCode,
+      });
   }
 
   // Programming or other unknown error: don't leak error details
   res.status(500).json({
     status: "error",
+    errorCode: "F10010001",
     message: "Unknown error happened...",
   });
 };
@@ -31,6 +38,7 @@ export const prodErrorHandler = (err, res) => {
 export const errorHandler = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
+  err.errorCode = err.errorCode || "F10010001";
 
   // 1) Remove file
   if (req.file) {
