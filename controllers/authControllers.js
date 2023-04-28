@@ -3,6 +3,15 @@ import catchAsync from "../utils/catchAsync.js";
 import * as authHelper from "../utils/helper/auth.js";
 import * as errorTable from "../utils/table/error.js";
 
+export const getOne = catchAsync(async (req, res, next) => {
+  const newUser = await User.findById(req.params.id);
+
+  res.status(201).json({
+    status: "succress",
+    data: newUser,
+  });
+});
+
 export const getAll = catchAsync(async (req, res, next) => {
   const newUser = await User.find({});
 

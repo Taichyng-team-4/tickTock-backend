@@ -4,6 +4,7 @@ import * as authControllers from "../controllers/authControllers.js";
 import * as shareController from "../controllers/shareControllers.js";
 
 const router = express.Router();
+router.get("/getOne/:id", authControllers.getOne);
 router.get("/getAll", authControllers.getAll);
 router.post(
   "/signup",
@@ -16,7 +17,7 @@ router.post(
     check("phone").notEmpty(),
     check("email").normalizeEmail().isEmail(),
     check("password").isLength({ min: 6 }),
-    check("confirmPassword").isLength({ min: 6 }),
+    check("passwordConfirm").isLength({ min: 6 }),
   ],
   shareController.validation,
   authControllers.signup
