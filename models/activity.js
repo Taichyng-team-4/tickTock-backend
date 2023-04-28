@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import validator from "validator";
 
 const activitySchema = new mongoose.Schema(
   {
@@ -30,6 +31,12 @@ const activitySchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, "An activity should has a name"],
+      minLength: [1, "An activity name should longer than 1 characters"],
+      maxLength: [
+        250,
+        "An activity name should not longer than 250 characters",
+      ],
+      unique: true,
     },
     isPublish: {
       type: Boolean,
@@ -38,23 +45,34 @@ const activitySchema = new mongoose.Schema(
     themeImg: {
       type: String,
       required: [true, "An activity should has a theme img"],
+      validate: [validator.isURL, "The activity theme image should be an url"],
     },
     description: {
       type: String,
       required: [true, "An activity should has a description"],
+      trim: true,
     },
     summary: {
       type: String,
       required: [true, "An activity should has a summary"],
+      trim: true,
     },
-    publishAt: Date,
+    publishAt: {
+      type: Date,
+      validate: [
+        (val) => val < Date.now(),
+        "Pleas provide a valid publish date",
+      ],
+    },
     startAt: {
       type: Date,
       required: [true, "An activity should has a start date"],
+      validate: [(val) => val > Date.now(), "Pleas provide a valid start date"],
     },
     endAt: {
       type: Date,
       required: [true, "An activity should has a end date"],
+      validate: [(val) => val > Date.now(), "Pleas provide a valid end date"],
     },
     deletedAt: { type: Date, select: false },
   },

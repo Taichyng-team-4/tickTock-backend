@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import validator from "validator";
 
 const ticketSchema = new mongoose.Schema(
   {
@@ -23,20 +24,35 @@ const ticketSchema = new mongoose.Schema(
       required: [true, "An ticket should has an orderId"],
     },
     isValid: { type: Boolean, default: true },
-    isRefunded: { type: Boolean, default: false },
-    isExpired: { type: Boolean, default: false },
     ticketTypeName: {
       type: String,
       require: [true, "A ticket should has its type name"],
     },
-    zone: { type: Boolean, require: [true, "A ticket should has a zone"] },
+    zone: {
+      type: Boolean,
+      require: [true, "A ticket should has a zone"],
+      validate: [
+        validator.isAlphanumeric,
+        "The zone of ticket should only contain alphabet or number.",
+      ],
+    },
     seatNo: {
       type: Boolean,
       require: [true, "A ticket should has a seat number"],
+      validate: [
+        validator.isAlphanumeric,
+        "The seat number of ticket should only contain alphabet or number.",
+      ],
+    },
+    currency: {
+      type: String,
+      require: [true, "A ticket should has a currency when purchase"],
+      validate: [validator.isAlpha, "Currency should only contain alphabet"],
     },
     price: {
       type: Boolean,
       require: [true, "A ticket should has a price when purchase"],
+      validate: [validator.isNumeric, "Price should only contain number"],
     },
     QRcode: {
       type: Boolean,
@@ -45,17 +61,28 @@ const ticketSchema = new mongoose.Schema(
     startAt: {
       type: Date,
       require: [true, "A ticket should mark the activity start date"],
-      select: false,
+    },
+    refundedAt: {
+      type: Date,
+      default: null,
     },
     expiredAt: {
       type: Date,
       require: [true, "A ticket should mark the expired date"],
-      select: false,
     },
     deletedAt: { type: Date, select: false },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+ticketSchema.virtual("isExpired").get(() => {
+  return this.expiredAt > new Date.now();
+});
+
+ticketSchema.virtual("isRefunded").get(() => {
+  if (!this.refundedAt) return false;
+  return true;
+});
 
 const Ticket = mongoose.model("Ticket", ticketSchema);
 

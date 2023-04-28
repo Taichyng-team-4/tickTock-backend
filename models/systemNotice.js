@@ -11,7 +11,6 @@ const systemNoticeSchema = new mongoose.Schema(
       require: [true, "A system notice should has a content"],
     },
     isPublish: { type: Boolean, default: false },
-    isExpired: { type: Boolean, default: false },
     publishAt: {
       type: Date,
       require: [true, "An system notice should has a release date"],
@@ -24,6 +23,10 @@ const systemNoticeSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+systemNoticeSchema.virtual("isExpired").get(() => {
+  return expiredAt > new Date.now();
+});
 
 const SystemNotice = mongoose.model("SystemNotice", systemNoticeSchema);
 

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import validator from "validator";
 
 const orgSchema = new mongoose.Schema(
   {
@@ -9,17 +10,20 @@ const orgSchema = new mongoose.Schema(
     },
     name: {
       type: String,
-      maxLength: 250,
       required: [true, "An organization should has a name"],
+      minLength:  [1, "An organization name should longer than 1 characters"],
+      maxLength:  [250, "An organization name should not longer than 250 characters"],
       unique: true,
     },
     img: {
       type: String,
       default: "",
+      validate: [validator.isURL, "The organization avatar should be an url"]
     },
     email: {
       type: String,
       required: [true, "An organization should has an email"],
+      validate: [validator.isEmail, "Please fill a valid email address"],
     },
     phone: {
       type: String,
@@ -28,9 +32,11 @@ const orgSchema = new mongoose.Schema(
     ext: { type: String },
     description: {
       type: String,
+      trim: true
     },
     summary: {
       type: String,
+      trim: true
     },
     deletedAt: { type: Date, select: false },
   },
