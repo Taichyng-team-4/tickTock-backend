@@ -11,6 +11,7 @@ import mongoSanitize from "express-mongo-sanitize";
 
 import AppError from "../utils/appError.js";
 import userRouters from "../routes/user.js";
+import authRouters from "../routes/auth.js";
 import orgRouters from "../routes/organization.js";
 import activityRouters from "../routes/activity.js";
 import newsRouters from "../routes/news.js";
@@ -20,7 +21,6 @@ import otherRouters from "../routes/other.js";
 import { errorHandler } from "../utils/errorHandler.js";
 
 import express from "express";
-
 const app = express();
 
 // CORS
@@ -71,6 +71,7 @@ app.use("/public/upload", express.static(path.join("public", "upload")));
 app.use("/api/v1/orgs", orgRouters);
 app.use("/api/v1/news", newsRouters);
 app.use("/api/v1/users", userRouters);
+app.use("/api/v1/auths", authRouters);
 app.use("/api/v1/orders", orderRouters);
 app.use("/api/v1/tickets", ticketRouters);
 app.use("/api/v1/activities", activityRouters);

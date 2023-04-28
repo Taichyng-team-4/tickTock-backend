@@ -1,14 +1,4 @@
-import { beforeAll } from "vitest";
 import * as errorHandler from "./errorHandler";
-
-describe("customErrorHandler()", () => {
-  test("should call custom error", () => {
-    const error = errorHandler.customErrorHandler();
-
-    expect(error.statusCode).toBe(400);
-    expect(error.message).toBe("Your Error Message...");
-  });
-});
 
 //---------------------------------------------------------------------
 
@@ -37,6 +27,7 @@ describe("devErrorHandler()", () => {
     expect(res.json).toBeCalledWith({
       status: err.status,
       error: err,
+      code: err.statusCode,
       errorCode: err.errorCode,
       message: err.message,
       stack: err.stack,
@@ -74,6 +65,7 @@ describe("prodErrorHandler()", () => {
     expect(res.status).toBeCalledWith(err.statusCode);
     expect(res.json).toBeCalledWith({
       status: err.status,
+      code: err.statusCode,
       message: err.message,
       errorCode: err.errorCode,
     });
@@ -87,6 +79,7 @@ describe("prodErrorHandler()", () => {
     expect(res.status).toBeCalledWith(500);
     expect(res.json).toBeCalledWith({
       status: "error",
+      code: 500,
       errorCode: "F10010001",
       message: "Unknown error happened...",
     });
@@ -103,6 +96,9 @@ describe("errorHandler()", () => {
       status: vi.fn().mockReturnThis(),
       json: vi.fn().mockReturnThis(),
     };
+  });
+
+  beforeEach(() => {
     err = {
       statusCode: 400,
       status: "fail",
@@ -111,9 +107,6 @@ describe("errorHandler()", () => {
       stack: "Test stack",
       isOperational: true,
     };
-  });
-
-  beforeEach(() => {
     vi.clearAllMocks();
   });
 
@@ -126,7 +119,7 @@ describe("errorHandler()", () => {
       vi.unstubAllEnvs();
     });
 
-    test("should be 500 error if error is unknown", () => {
+    test("should http error code equal to 500 if error is unknown", () => {
       const err = {};
 
       errorHandler.errorHandler(err, req, res, null);
@@ -157,13 +150,14 @@ describe("errorHandler()", () => {
       vi.unstubAllEnvs();
     });
 
-    test("should response error with detail", () => {
+    test("should response error has property", () => {
       errorHandler.errorHandler(err, req, res, null);
 
       expect(res.status).toBeCalledWith(err.statusCode);
       expect(res.json).toBeCalledWith({
         status: err.status,
         error: err,
+        code: err.statusCode,
         errorCode: err.errorCode,
         message: err.message,
         stack: err.stack,
@@ -186,6 +180,7 @@ describe("errorHandler()", () => {
       expect(res.status).toBeCalledWith(err.statusCode);
       expect(res.json).toBeCalledWith({
         status: err.status,
+        code: err.statusCode,
         errorCode: err.errorCode,
         message: err.message,
       });
@@ -199,21 +194,59 @@ describe("errorHandler()", () => {
       expect(res.status).toBeCalledWith(500);
       expect(res.json).toBeCalledWith({
         status: "error",
+        code: 500,
         errorCode: "F10010001",
         message: "Unknown error happened...",
       });
     });
 
-    test("should has response property if error is custom error", () => {
-      err = { ...err, name: "CustomErrorChoice" };
+    test("should has response property if error is cast error", () => {
+      err = { ...err, name: "CastError", path: "testPath", value: "testValue" };
 
       errorHandler.errorHandler(err, req, res, null);
 
       expect(res.status).toBeCalledWith(400);
       expect(res.json).toBeCalledWith({
+        code: err.statusCode,
         status: "fail",
-        errorCode: "your error code",
-        message: "Your Error Message...",
+        errorCode: "C10020001",
+        message: `Field ${err.path} should not be ${err.value}`,
+      });
+    });
+
+    test("should has response property if error is duplicate error", () => {
+      err = {
+        ...err,
+        code: 11000,
+        keyPattern: { duplicateKey1: "value1", duplicateKey2: "value2" },
+      };
+
+      errorHandler.errorHandler(err, req, res, null);
+
+      expect(res.status).toBeCalledWith(400);
+      expect(res.json).toBeCalledWith({
+        code: err.statusCode,
+        status: "fail",
+        errorCode: "C10010002",
+        message: "The duplicateKey1, duplicateKey2 already exist...",
+      });
+    });
+
+    test("should has response property if error is validation error", () => {
+      err = {
+        ...err,
+        name: "ValidationError",
+        errors: [{ message: "testMessage1" }, { message: "testMessage2" }],
+      };
+
+      errorHandler.errorHandler(err, req, res, null);
+
+      expect(res.status).toBeCalledWith(400);
+      expect(res.json).toBeCalledWith({
+        code: err.statusCode,
+        status: "fail",
+        errorCode: "C10020001",
+        message: `Invalid input. testMessage1. testMessage2`,
       });
     });
   });

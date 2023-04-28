@@ -47,14 +47,20 @@ const ticketTypeSchema = new mongoose.Schema(
       type: Number,
       minLength: [0, "The reamin ticke should greater than 0"],
       validate: [
-        (val) => val <= this.total,
+        function (val) {
+          return val <= this.total;
+        },
         "The remain ticket should not greater than the total ticket number",
       ],
       default: () => this.total,
     },
     deletedAt: { type: Date, select: false },
   },
-  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
 const TicketType = mongoose.model("TicketType", ticketTypeSchema);

@@ -72,17 +72,19 @@ const ticketSchema = new mongoose.Schema(
     },
     deletedAt: { type: Date, select: false },
   },
-  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
-ticketSchema.virtual("isExpired").get(() => {
-  return this.expiredAt > new Date.now();
-});
-
+ticketSchema.virtual("isStart").get(() => this.startAt > new Date.now());
 ticketSchema.virtual("isRefunded").get(() => {
   if (!this.refundedAt) return false;
   return true;
 });
+ticketSchema.virtual("isExpired").get(() => this.expiredAt > new Date.now());
 
 const Ticket = mongoose.model("Ticket", ticketSchema);
 

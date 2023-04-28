@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import validator from "validator";
+import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
@@ -12,10 +13,29 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
+      require: [true, "A user should has his passowrd"],
       minLength: [6, "password must at least 6 characters"],
       select: false,
     },
-    name: {
+    passwordConfirm: {
+      type: String,
+      require: [true, "A user should has his confromPassowrd"],
+      minLength: [6, "confromPassowrd must at least 6 characters"],
+      validate: [
+        function (val) {
+          return val === this.password;
+        },
+        "passwords are not same",
+      ],
+      select: false,
+    },
+    firstName: {
+      type: String,
+      required: [true, "A user should has a name"],
+      minLength: [1, "A user name should longer than 1 characters"],
+      maxLength: [250, "A user name should not longer than 250 characters"],
+    },
+    lastName: {
       type: String,
       required: [true, "A user should has a name"],
       minLength: [1, "A user name should longer than 1 characters"],
@@ -32,7 +52,7 @@ const userSchema = new mongoose.Schema(
     },
     avatar: {
       type: String,
-      default: "",
+      default: "http://www.sample.com",
       validate: [validator.isURL, "The avatar should be an url"],
     },
     phone: {
@@ -42,20 +62,46 @@ const userSchema = new mongoose.Schema(
     },
     birthday: {
       type: Date,
-      validate: [(val) => val < Date.now(), "Pleas provide a valid birth"],
+      validate: [
+        function (val) {
+          return val < Date.now();
+        },
+        "Pleas provide a valid birth",
+      ],
       select: false,
     },
-    emailValidateAt: { type: Date, default: null },
-    deletedAt: { type: Date, select: false },
+    emailValidateAt: { type: Date, default: undefined },
+    deletedAt: { type: Date, default: undefined },
   },
-  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
+  {
+    id: false,
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
-ticketSchema.virtual("isEmailValidateAt").get(() => {
+userSchema.virtual("isEmailValidateAt").get(function () {
   if (!this.emailValidateAt) return false;
   return true;
 });
 
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+
+  this.password = await bcrypt.hash(this.password, 12);
+  this.passwordConfirm = undefined;
+
+  next();
+});
+
+userSchema.methods.correctPassword = async function (
+  plainTextPassword,
+  hashPassword
+) {
+  return bcrypt.compare(plainTextPassword, hashPassword);
+};
+
 const User = mongoose.model("User", userSchema);
 
-module.exports = User;
+export default User;

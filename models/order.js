@@ -18,7 +18,11 @@ const orderSchema = new mongoose.Schema(
     },
     deletedAt: { type: Date, select: false },
   },
-  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
 const order = mongoose.model("Order", orderSchema);

@@ -17,7 +17,10 @@ const attendeeSchema = new mongoose.Schema(
       type: String,
       required: [true, "An attendee should has a name"],
       minLength: [1, "An attendee name should longer than 1 characters"],
-      maxLength: [250, "An attendee name should not longer than 250 characters"],
+      maxLength: [
+        250,
+        "An attendee name should not longer than 250 characters",
+      ],
     },
     email: {
       type: String,
@@ -40,7 +43,11 @@ const attendeeSchema = new mongoose.Schema(
     },
     deletedAt: { type: Date, select: false },
   },
-  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
 const Attendee = mongoose.model("Attendee", attendeeSchema);
