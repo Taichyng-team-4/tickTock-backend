@@ -6,6 +6,7 @@ process.on("uncaughtException", (err) => {
 
 import * as dotenv from "dotenv";
 dotenv.config();
+import "./config/dbInit.js";
 import app from "./config/app.js";
 
 //Server listen port
