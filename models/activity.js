@@ -38,10 +38,6 @@ const activitySchema = new mongoose.Schema(
       ],
       unique: true,
     },
-    isPublish: {
-      type: Boolean,
-      default: false,
-    },
     themeImg: {
       type: String,
       required: [true, "An activity should has a theme img"],
@@ -60,24 +56,48 @@ const activitySchema = new mongoose.Schema(
     publishAt: {
       type: Date,
       validate: [
-        (val) => val < Date.now(),
+        function (val) {
+          return val < Date.now();
+        },
         "Pleas provide a valid publish date",
       ],
     },
     startAt: {
       type: Date,
       required: [true, "An activity should has a start date"],
-      validate: [(val) => val > Date.now(), "Pleas provide a valid start date"],
+      validate: [
+        function (val) {
+          return val > Date.now();
+        },
+        "Pleas provide a valid start date",
+      ],
     },
     endAt: {
       type: Date,
       required: [true, "An activity should has a end date"],
-      validate: [(val) => val > Date.now(), "Pleas provide a valid end date"],
+      validate: [
+        function (val) {
+          return val > Date.now();
+        },
+        "Pleas provide a valid end date",
+      ],
     },
     deletedAt: { type: Date, select: false },
   },
-  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
+
+activitySchema.virtual("isPublished").get(() => {
+  if (!this.publishAt) return false;
+  return this.publishAt < new Date.now();
+});
+
+activitySchema.virtual("isStart").get(() => this.startAt > new Date.now());
+activitySchema.virtual("isEnd").get(() => this.endAt > new Date.now());
 
 const Activity = mongoose.model("activitySchema", activitySchema);
 

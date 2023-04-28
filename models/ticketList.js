@@ -24,7 +24,11 @@ const ticketListSchema = new mongoose.Schema(
     },
     deletedAt: { type: Date, select: false },
   },
-  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
 ticketListSchema.index({ ticketTypeId: 1, seatNo: 1 }, { unique: true });

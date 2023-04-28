@@ -4,7 +4,10 @@ const activitySettingSchema = new mongoose.Schema(
   {
     isAllowModify: {
       type: Boolean,
-      required: [true, "An activity should provide whether to allow users to modify their provided information"],
+      required: [
+        true,
+        "An activity should provide whether to allow users to modify their provided information",
+      ],
       default: true,
     },
     email: {

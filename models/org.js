@@ -11,14 +11,17 @@ const orgSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, "An organization should has a name"],
-      minLength:  [1, "An organization name should longer than 1 characters"],
-      maxLength:  [250, "An organization name should not longer than 250 characters"],
+      minLength: [1, "An organization name should longer than 1 characters"],
+      maxLength: [
+        250,
+        "An organization name should not longer than 250 characters",
+      ],
       unique: true,
     },
     img: {
       type: String,
       default: "",
-      validate: [validator.isURL, "The organization avatar should be an url"]
+      validate: [validator.isURL, "The organization avatar should be an url"],
     },
     email: {
       type: String,
@@ -32,15 +35,19 @@ const orgSchema = new mongoose.Schema(
     ext: { type: String },
     description: {
       type: String,
-      trim: true
+      trim: true,
     },
     summary: {
       type: String,
-      trim: true
+      trim: true,
     },
     deletedAt: { type: Date, select: false },
   },
-  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
 const Org = mongoose.model("Org", orgSchema);

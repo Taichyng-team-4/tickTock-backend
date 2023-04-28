@@ -25,8 +25,19 @@ const activityNoticeSchema = new mongoose.Schema(
     },
     deletedAt: { type: Date, select: false },
   },
-  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
+
+activityNoticeSchema
+  .virtual("isPublished")
+  .get(() => this.publishAt < new Date.now());
+activityNoticeSchema
+  .virtual("isExpired")
+  .get(() => this.expiredAt > new Date.now());
 
 const ActivityNotice = mongoose.model("ActivityNotice", activityNoticeSchema);
 
