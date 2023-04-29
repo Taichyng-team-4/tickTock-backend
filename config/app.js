@@ -9,7 +9,7 @@ import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import mongoSanitize from "express-mongo-sanitize";
 
-import AppError from "../utils/appError.js";
+import AppError from "../utils/error/appError.js";
 import userRouters from "../routes/user.js";
 import authRouters from "../routes/auth.js";
 import orgRouters from "../routes/organization.js";
@@ -18,7 +18,7 @@ import newsRouters from "../routes/news.js";
 import orderRouters from "../routes/order.js";
 import ticketRouters from "../routes/ticket.js";
 import otherRouters from "../routes/other.js";
-import { errorHandler } from "../utils/errorHandler.js";
+import { errorHandler } from "../utils/error/errorHandler.js";
 
 import express from "express";
 const app = express();

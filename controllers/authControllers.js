@@ -1,5 +1,7 @@
+import passwordGenerator from "generate-password";
 import User from "../models/user.js";
-import catchAsync from "../utils/catchAsync.js";
+import Email from "../utils/email.js";
+import catchAsync from "../utils/error/catchAsync.js";
 import * as authHelper from "../utils/helper/auth.js";
 import * as errorTable from "../utils/table/error.js";
 
@@ -19,6 +21,38 @@ export const getAll = catchAsync(async (req, res, next) => {
     status: "succress",
     data: newUser,
   });
+});
+
+export const deleteOne = catchAsync(async (req, res, next) => {
+  await User.deleteOne({ _id: req.params.id });
+
+  res.status(204).json();
+});
+
+//Verify Json Web Token
+export const authToken = catchAsync(async (req, res, next) => {
+  let token;
+  // 1) Allow preflight
+  if (req.method === "OPTIONS") return next();
+
+  // 2) Get token
+  if (authHelper.isTokenExist(req.headers.authorization))
+    token = req.headers.authorization.split(" ")[1]; //Authorization: 'Bearer TOKEN
+  if (!token) throw errorTable.loginFailError();
+
+  // 3) Verify token
+  const decodeToken = authHelper.decodeJWT(token);
+
+  // 4) Check if User exist
+  const user = await User.findById(decodeToken.id);
+  if (!user) throw errorTable.loginFailError();
+
+  // 5) Check if User update his password lately
+  if (user.isTokenBeforePasswordUpdate(decodeToken.iat))
+    throw errorTable.needToReloginError();
+
+  req.user = user;
+  next();
 });
 
 export const signup = catchAsync(async (req, res, next) => {
@@ -79,17 +113,61 @@ export const login = catchAsync(async (req, res, next) => {
   });
 });
 
-export const forgotPassword = catchAsync((req, res, next) => {
+export const forgotPassword = catchAsync(async (req, res, next) => {
+  // 1) Check if User exist
+  const user = await User.findOne({ email: req.body.email }).select("+email");
+  if (!user) throw errorTable.emailNotFindError();
+
+  // 2) Generate new Password
+  const newPassword = passwordGenerator.generate({
+    length: 15,
+    numbers: true,
+    symbols: true,
+  });
+
+  // 3) Save the user password
+  user.password = newPassword;
+  user.emailValidatedAt = Date.now();
+  await user.save();
+
+  // 4) Send new Password to User email
+  const email = new Email(user.email, user.name);
+  const message = `<p>Your new password is</p>` + `<h2>${newPassword}</h2>`;
+  await email.send("Reset Password", message).catch((err) => {
+    console.log(err)
+    throw errorTable.sendEmailError();
+  });
+
   res.status(200).json({
     status: "success",
     code: "200",
-    message: "New passowrd has sent to your email",
+    message:
+      "Reset password successfully, New password has sent to your email!",
   });
 });
 
-export const updatePassword = catchAsync((req, res, next) => {
+export const updatePassword = catchAsync(async (req, res, next) => {
+  const { oldPassword, password, passwordConfirm } = req.body;
+
+  // 1) Get User
+  const user = await User.findById(req.user._id).select("+password");
+  if (!user) throw errorTable.userNotFindError();
+
+  // 2) Check user password
+  const checkResult = await user.correctPassword(oldPassword, user.password);
+  if (!checkResult) throw errorTable.updatePasswordFailError();
+
+  // 3) Save user
+  user.password = password;
+  user.passwordConfirm = passwordConfirm;
+  await user.save();
+
+  // 4) Create jwt token
+  const token = authHelper.createJWT(user._id);
+
   res.status(200).json({
     status: "success",
+    token,
     code: "200",
     message: "Update password successfully",
   });

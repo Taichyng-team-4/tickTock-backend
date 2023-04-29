@@ -70,7 +70,8 @@ const userSchema = new mongoose.Schema(
       ],
       select: false,
     },
-    emailValidateAt: { type: Date, default: undefined },
+    emailValidatedAt: { type: Date, default: undefined },
+    passwordUpdatedAt: { type: Date, default: undefined },
     deletedAt: { type: Date, default: undefined },
   },
   {
@@ -81,8 +82,8 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-userSchema.virtual("isEmailValidateAt").get(function () {
-  if (!this.emailValidateAt) return false;
+userSchema.virtual("isEmailValidatedAt").get(function () {
+  if (!this.emailValidatedAt) return false;
   return true;
 });
 
@@ -95,11 +96,25 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+userSchema.pre("save", function (next) {
+  if (!this.isModified("password") || this.isNew) return next();
+
+  this.passwordUpdatedAt = Date.now() - 1000;
+  next();
+});
+
 userSchema.methods.correctPassword = async function (
   plainTextPassword,
   hashPassword
 ) {
   return bcrypt.compare(plainTextPassword, hashPassword);
+};
+
+userSchema.methods.isTokenBeforePasswordUpdate = function (jwtIat) {
+  if (this.passwordUpdatedAt)
+    return 1000 * jwtIat < this.passwordUpdatedAt.getTime();
+
+  return false;
 };
 
 const User = mongoose.model("User", userSchema);
