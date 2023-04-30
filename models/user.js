@@ -70,6 +70,7 @@ const userSchema = new mongoose.Schema(
       ],
       select: false,
     },
+    emailVerifyToken: { type: String, select: false },
     emailValidatedAt: { type: Date, default: undefined },
     passwordUpdatedAt: { type: Date, default: undefined },
     deletedAt: { type: Date, default: undefined },
@@ -82,7 +83,11 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-userSchema.virtual("isEmailValidatedAt").get(function () {
+userSchema.virtual("fullName").get(function () {
+  return `${this.firstName} ${this.lastName}`;
+});
+
+userSchema.virtual("isEmailValidated").get(function () {
   if (!this.emailValidatedAt) return false;
   return true;
 });
@@ -113,7 +118,6 @@ userSchema.methods.correctPassword = async function (
 userSchema.methods.isTokenBeforePasswordUpdate = function (jwtIat) {
   if (this.passwordUpdatedAt)
     return 1000 * jwtIat < this.passwordUpdatedAt.getTime();
-
   return false;
 };
 

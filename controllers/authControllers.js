@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import passwordGenerator from "generate-password";
 import User from "../models/user.js";
 import Email from "../utils/email.js";
@@ -29,7 +30,6 @@ export const deleteOne = catchAsync(async (req, res, next) => {
   res.status(204).json();
 });
 
-//Verify Json Web Token
 export const authToken = catchAsync(async (req, res, next) => {
   let token;
   // 1) Allow preflight
@@ -38,14 +38,14 @@ export const authToken = catchAsync(async (req, res, next) => {
   // 2) Get token
   if (authHelper.isTokenExist(req.headers.authorization))
     token = req.headers.authorization.split(" ")[1]; //Authorization: 'Bearer TOKEN
-  if (!token) throw errorTable.loginFailError();
+  if (!token) throw errorTable.AuthFailError();
 
   // 3) Verify token
   const decodeToken = authHelper.decodeJWT(token);
 
   // 4) Check if User exist
   const user = await User.findById(decodeToken.id);
-  if (!user) throw errorTable.loginFailError();
+  if (!user) throw errorTable.AuthFailError();
 
   // 5) Check if User update his password lately
   if (user.isTokenBeforePasswordUpdate(decodeToken.iat))
@@ -70,40 +70,105 @@ export const signup = catchAsync(async (req, res, next) => {
   ];
   const santalizeResponse = authHelper.santalize(req.body, requireFields);
 
-  // 2) Create User
-  const newUser = await User.create(santalizeResponse);
+  // 2) Create email verification secret and token
+  const [emailToken, hashEmailToken] = authHelper.createEmailToken();
 
-  // 3) Create jwt token
-  const token = authHelper.createJWT(newUser._id);
+  // 3) Check if user exist
+  const user = await User.findOne({
+    email: santalizeResponse.email,
+  });
+
+  // 4) If user exist, then check if user email validation
+  let newUser;
+  if (user && user.isEmailValidated) throw errorTable.emailAlreadyExistError();
+
+  if (user && !user.isEmailValidated) {
+    Object.assign(user, {
+      ...santalizeResponse,
+      emailVerifyToken: hashEmailToken,
+    });
+    await user.save();
+    newUser = user;
+  }
+
+  // 5) If user does not exist, then create User
+  if (!user) {
+    newUser = await User.create({
+      ...santalizeResponse,
+      emailVerifyToken: hashEmailToken,
+    });
+  }
+
+  // 6) Create email verification token
+  const token = authHelper.createJWT({
+    id: newUser._id,
+    token: emailToken,
+  });
+
+  // 7) Send an verification email
+  const email = new Email(newUser.email, newUser.name);
+  await email
+    .sendWelcome(`${req.protocol}://${req.hostname}:${process.env.PORT}`, token)
+    .catch((err) => {
+      throw errorTable.sendEmailError();
+    });
+
+  // 8) Get User
+  newUser = await User.findById(newUser._id).select(
+    "-__v -createdAt -updatedAt -passwordUpdatedAt"
+  );
 
   res.status(201).json({
     status: "succress",
-    token,
     data: newUser,
   });
 });
 
-export const verify_email = catchAsync((req, res, next) => {
-  res.status(200).json({
-    status: "success",
-    code: "200",
-    message: "Validate email successfully!",
-  });
+export const verify_email = catchAsync(async (req, res, next) => {
+  const token = req.query.token;
+  if (!token) throw errorTable.verifyEmailFailError();
+
+  // 1) Verify token
+  const decodeToken = authHelper.decodeJWT(token);
+
+  // 2) find User by token
+  const user = await User.findById(decodeToken.id).select("+emailVerifyToken");
+  if (!user) throw errorTable.verifyEmailFailError();
+
+  // 3) check token
+  const hashToken = crypto
+    .createHash("sha256")
+    .update(decodeToken.token)
+    .digest("hex");
+
+  if (!authHelper.isSameToken(hashToken, user.emailVerifyToken))
+    throw errorTable.verifyEmailFailError();
+
+  user.emailVerifyToken = undefined;
+  user.emailValidatedAt = Date.now();
+  await user.save();
+
+  res.redirect(`${req.protocol}://${req.hostname}:${process.env.PORT}`);
 });
 
 export const login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
   // 1) Check if user exists by his email
-  const user = await User.findOne({ email }).select("+password");
-  if (!user) throw errorTable.loginFailError();
+  const user = await User.findOne({
+    email,
+  }).select("+password");
+  if (!user) throw errorTable.AuthFailError();
 
-  // 2) Check user password
+  // 2) Check if user validate his email
+  if (!user.isEmailValidated) throw errorTable.notVerifyEmailError();
+
+  // 3) Check user password
   const checkResult = await user.correctPassword(password, user.password);
-  if (!checkResult) throw errorTable.loginFailError();
+  if (!checkResult) throw errorTable.AuthFailError();
 
-  // 3) Create jwt token
-  const token = authHelper.createJWT(user._id);
+  // 4) Create jwt token
+  const token = authHelper.createJWT({ id: user._id });
 
   res.status(200).json({
     status: "success",
@@ -134,7 +199,6 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
   const email = new Email(user.email, user.name);
   const message = `<p>Your new password is</p>` + `<h2>${newPassword}</h2>`;
   await email.send("Reset Password", message).catch((err) => {
-    console.log(err)
     throw errorTable.sendEmailError();
   });
 
@@ -163,7 +227,7 @@ export const updatePassword = catchAsync(async (req, res, next) => {
   await user.save();
 
   // 4) Create jwt token
-  const token = authHelper.createJWT(user._id);
+  const token = authHelper.createJWT({ id: user._id });
 
   res.status(200).json({
     status: "success",
