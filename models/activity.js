@@ -93,11 +93,11 @@ const activitySchema = new mongoose.Schema(
 
 activitySchema.virtual("isPublished").get(() => {
   if (!this.publishAt) return false;
-  return this.publishAt < new Date.now();
+  return this.publishAt < Date.now();
 });
 
-activitySchema.virtual("isStart").get(() => this.startAt > new Date.now());
-activitySchema.virtual("isEnd").get(() => this.endAt > new Date.now());
+activitySchema.virtual("isStart").get(() => this.startAt > Date.now());
+activitySchema.virtual("isEnd").get(() => this.endAt > Date.now());
 
 const Activity = mongoose.model("activitySchema", activitySchema);
 
