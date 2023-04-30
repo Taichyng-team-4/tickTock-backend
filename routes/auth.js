@@ -1,5 +1,4 @@
 import express from "express";
-import Email from "../utils/email.js";
 import { check } from "express-validator";
 import * as authControllers from "../controllers/authControllers.js";
 import * as shareController from "../controllers/shareControllers.js";
