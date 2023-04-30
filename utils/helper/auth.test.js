@@ -1,7 +1,8 @@
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import * as authHelper from "./auth";
 import * as errorTable from "../table/error";
-import { beforeAll } from "vitest";
+import { beforeAll, beforeEach, describe, test } from "vitest";
 
 describe("santalize()", () => {
   test("should throw error if object does not exist", () => {
@@ -45,14 +46,97 @@ describe("createJWT()", () => {
   });
 
   test("should create the jwt by id", () => {
-    const testId = "testId";
-    authHelper.createJWT(testId);
+    const obj = { id: "testId" };
+    authHelper.createJWT(obj);
     expect(jwt.sign).toHaveBeenLastCalledWith(
-      { id: testId },
+      { id: "testId" },
       process.env.JWT_SECRECT,
       {
         expiresIn: process.env.JWT_EXPIRED_IN,
       }
     );
   });
+});
+
+describe("decodeJWT()", () => {
+  beforeAll(() => {
+    vi.stubEnv("JWT_SECRECT", "test_JWT_SECRECT");
+    vi.spyOn(jwt, "verify").mockImplementation(() => {});
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test("should decode the token by the server jwt secret key", () => {
+    const token = "testToken";
+    const decodeToken = "decodeToken";
+    jwt.verify.mockImplementationOnce(() => decodeToken);
+
+    const result = authHelper.decodeJWT(token);
+
+    expect(jwt.verify).toHaveBeenLastCalledWith(token, process.env.JWT_SECRECT);
+    expect(result).toBe(decodeToken);
+  });
+});
+
+describe("isTokenExist()", () => {
+  test("should return false if the input authorization does not exist in the header", () => {
+    const result = authHelper.isTokenExist();
+
+    expect(result).toBe(false);
+  });
+
+  test("should return false if Bearer does not exist in the header authorization", () => {
+    const authorization = "test";
+
+    const result = authHelper.isTokenExist(authorization);
+
+    expect(result).toBe(false);
+  });
+
+  test("should return false if bearer token does not exist in header", () => {
+    const authorization = "Bearer";
+
+    const result = authHelper.isTokenExist(authorization);
+
+    expect(result).toBe(false);
+  });
+
+  test("should return true if bearer token exists in header", () => {
+    const authorization = "Bearer testToken";
+
+    const result = authHelper.isTokenExist(authorization);
+
+    expect(result).toBe(true);
+  });
+});
+
+describe("createEmailToken()", () => {
+  test("should call create token by crypto", () => {
+    const randomBytes = vi.fn();
+    const toString = vi.fn();
+
+    vi.spyOn(crypto, "randomBytes").mockImplementationOnce(() => ({
+      randomBytes: randomBytes.mockReturnThis(),
+      toString,
+    }));
+
+    authHelper.createEmailToken();
+
+    expect(randomBytes).toHaveBeenLastCalledWith(32);
+    expect(toString).toHaveBeenLastCalledWith("hex");
+  });
+
+  // test("should return email token and hash token", () => {
+  //   const [token, hash] = authHelper.createEmailToken();
+
+  //   expect().toBe();
+  // });
+
+  // test("should return email token and hash token", () => {
+  //   const [token, hash] = authHelper.createEmailToken();
+
+  //   expect().toBe();
+  // });
 });

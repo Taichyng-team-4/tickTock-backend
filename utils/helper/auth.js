@@ -22,11 +22,14 @@ export const createJWT = (obj) =>
 export const decodeJWT = (token) => jwt.verify(token, process.env.JWT_SECRECT);
 
 export const isTokenExist = (authorization) =>
-  authorization && authorization.startsWith("Bearer");
+  !!(
+    authorization &&
+    authorization.startsWith("Bearer") &&
+    authorization.split(" ")[1]
+  );
 
 export const createEmailToken = () => {
   const token = crypto.randomBytes(32).toString("hex");
-
   const hash = crypto.createHash("sha256").update(token).digest("hex");
 
   return [token, hash];
