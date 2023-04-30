@@ -46,7 +46,7 @@ export default class Email {
     const html =
       `<h1>Welcome to TickTock</h1>` +
       `<h3>Please verify your email below.</h3>` +
-      `<a href=${host}/auths/verify_email/${token}>Confirm</a>`;
+      `<a href=${host}/api/v1/auths/verify_email?token=${token}>Confirm</a>`;
 
     // 2) Define email options
     const mailOptions = {
