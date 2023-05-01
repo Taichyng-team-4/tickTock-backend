@@ -106,12 +106,12 @@ export const signup = catchAsync(async (req, res, next) => {
   });
 
   // 7) Send an verification email
-  const email = new Email(newUser.email, newUser.name);
-  await email
-    .sendWelcome(`${req.protocol}://${req.hostname}:${process.env.PORT}`, token)
-    .catch((err) => {
-      throw errorTable.sendEmailError();
-    });
+  const email = new Email(newUser.email, newUser.firstName);
+  const verifyUrl = `${req.protocol}://${req.hostname}:${process.env.PORT}/api/v1/auths/verify_email?token=${token}`;
+  await email.sendWelcome(verifyUrl).catch((err) => {
+    console.log(err)
+    throw errorTable.sendEmailError();
+  });
 
   // 8) Get User
   newUser = await User.findById(newUser._id).select(
@@ -141,7 +141,7 @@ export const verify_email = catchAsync(async (req, res, next) => {
     .update(decodeToken.token)
     .digest("hex");
 
-  if (!authHelper.isSameToken(hashToken, user.emailVerifyToken))
+  if (hashToken !== user.emailVerifyToken)
     throw errorTable.verifyEmailFailError();
 
   user.emailVerifyToken = undefined;

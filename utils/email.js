@@ -1,4 +1,8 @@
+import pug from "pug";
+import path from "path";
+import { fileURLToPath } from "url";
 import nodemailer from "nodemailer";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default class Email {
   constructor(email, name) {
@@ -10,8 +14,7 @@ export default class Email {
   //Setting the email transportation info
   newTransport() {
     if (process.env.APP_ENV === "prod") {
-
-        return nodemailer.createTransport({
+      return nodemailer.createTransport({
         service: process.env.EMAIL_HOST,
         port: process.env.EMAIL_PORT,
         auth: {
@@ -41,12 +44,13 @@ export default class Email {
     });
   }
 
-  async sendWelcome(host, token) {
+  async sendWelcome(verifyUrl) {
     // 1) Create email content
-    const html =
-      `<h1>Welcome to TickTock</h1>` +
-      `<h3>Please verify your email below.</h3>` +
-      `<a href=${host}/api/v1/auths/verify_email?token=${token}>Confirm</a>`;
+    const templatePath = path.join(__dirname, "..", "views", "email.pug");
+    const html = pug.renderFile(templatePath, {
+      name: this.name,
+      verify_url: verifyUrl,
+    });
 
     // 2) Define email options
     const mailOptions = {

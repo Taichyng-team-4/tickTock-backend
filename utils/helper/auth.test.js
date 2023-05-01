@@ -113,30 +113,17 @@ describe("isTokenExist()", () => {
 });
 
 describe("createEmailToken()", () => {
-  test("should call create token by crypto", () => {
-    const randomBytes = vi.fn();
-    const toString = vi.fn();
+  test("should return the token and hashToken", () => {
+    const [token, hashToken] = authHelper.createEmailToken();
 
-    vi.spyOn(crypto, "randomBytes").mockImplementationOnce(() => ({
-      randomBytes: randomBytes.mockReturnThis(),
-      toString,
-    }));
-
-    authHelper.createEmailToken();
-
-    expect(randomBytes).toHaveBeenLastCalledWith(32);
-    expect(toString).toHaveBeenLastCalledWith("hex");
+    expect(token).not.toBeUndefined();
+    expect(hashToken).not.toBeUndefined();
   });
 
-  // test("should return email token and hash token", () => {
-  //   const [token, hash] = authHelper.createEmailToken();
+  test("should the token equal to the hashToken if the token hash", () => {
+    const [token, hashToken] = authHelper.createEmailToken();
+    const hash = crypto.createHash("sha256").update(token).digest("hex");
 
-  //   expect().toBe();
-  // });
-
-  // test("should return email token and hash token", () => {
-  //   const [token, hash] = authHelper.createEmailToken();
-
-  //   expect().toBe();
-  // });
+    expect(hash).toBe(hashToken);
+  });
 });

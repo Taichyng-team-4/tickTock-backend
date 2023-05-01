@@ -34,5 +34,3 @@ export const createEmailToken = () => {
 
   return [token, hash];
 };
-
-export const isSameToken = (token1, token2) => token1 === token2;

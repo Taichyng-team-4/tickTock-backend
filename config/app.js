@@ -4,6 +4,7 @@ import cors from "cors";
 import xss from "xss-clean";
 import helmet from "helmet";
 import morgan from "morgan";
+import { fileURLToPath } from "url";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
@@ -21,7 +22,13 @@ import otherRouters from "../routes/other.js";
 import { errorHandler } from "../utils/error/errorHandler.js";
 
 import express from "express";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 const app = express();
+
+// View engine
+app.set("view engine", "pug");
+app.set("views", path.join(__dirname, "views"));
 
 // CORS
 app.use(cors());
@@ -65,7 +72,7 @@ app.use(hpp({ whitelist: ["YourParams"] }));
 app.use(compression());
 
 // Serving static file
-app.use("/public/upload", express.static(path.join("public", "upload")));
+app.use(express.static(path.join(__dirname, "public")));
 
 // Routes
 app.use("/api/v1/orgs", orgRouters);
