@@ -47,12 +47,10 @@ const userSchema = new mongoose.Schema(
         values: ["male", "female", "anonymous"],
         message: "gender should be male, female or anonymous",
       },
-      default: "male",
       select: false,
     },
     avatar: {
       type: String,
-      default: "http://www.sample.com",
       validate: [validator.isURL, "The avatar should be an url"],
     },
     phone: {

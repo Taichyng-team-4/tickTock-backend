@@ -1,5 +1,5 @@
 import { validationResult } from "express-validator";
-import * as errorTable from "../utils/table/error.js";
+import * as errorTable from "../utils/error/errorTable.js";
 
 // Validate the req
 export const validation = (req, res, next) => {

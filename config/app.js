@@ -4,8 +4,10 @@ import cors from "cors";
 import xss from "xss-clean";
 import helmet from "helmet";
 import morgan from "morgan";
+import passport from "passport";
 import { fileURLToPath } from "url";
 import compression from "compression";
+import session from "express-session";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import mongoSanitize from "express-mongo-sanitize";
@@ -69,6 +71,21 @@ app.use(xss());
 
 // Prevent parameter pollution
 app.use(hpp({ whitelist: ["YourParams"] }));
+
+//Session
+app.use(
+  session({
+    secret: process.env.SESSION_SECRECT,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+// initalize passport
+app.use(passport.initialize());
+
+// deserialize cookie from the browser
+app.use(passport.session());
 
 // Compress send data
 app.use(compression());

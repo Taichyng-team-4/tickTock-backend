@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import * as errorTable from "../table/error.js";
+import * as errorTable from "../error/errorTable.js";
 
 export const santalize = (obj, fields) => {
   let newObj = {};

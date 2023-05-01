@@ -28,9 +28,9 @@ passport.deserializeUser(function (user, cb) {
 passport.use(
   new GoogleStrategy(
     {
-      clientID: process.env["GOOGLE_CLIENT_ID"],
-      clientSecret: process.env["GOOGLE_CLIENT_SECRET"],
-      callbackURL: "api/v1/oauths/google/redirect",
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "/api/v1/oauths/google/redirect",
     },
     oauthController.oauthGoogle
   )

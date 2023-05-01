@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import * as authHelper from "./auth";
-import * as errorTable from "../table/error";
+import * as errorTable from "../error/errorTable";
 import { beforeAll, beforeEach, describe, test } from "vitest";
 
 describe("santalize()", () => {

@@ -1,7 +1,8 @@
-import * as errorTable from "../table/error.js";
+import * as errorTable from "../error/errorTable.js";
 
 // Handle dev error
 export const devErrorHandler = (err, res) => {
+  console.log(err)
   res.status(err.statusCode).json({
     code: err.statusCode,
     status: err.status,

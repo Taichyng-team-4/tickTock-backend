@@ -1,20 +1,22 @@
 import express from "express";
 import passport from "passport";
-import * as errorTable from "../utils/table/error.js"
 import * as oauthController from "../controllers/oauthControllers.js";
 
 const router = express.Router();
 
 router.get(
-  "/google/redirect",
-  passport.authenticate("google", {
-    failureRedirect: "/oauths/google/failed",
-  }),
-  oauthController.googleSuccess,
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-router.get("/google/failed", (req, res) => {
-  throw errorTable.googleLoginFailError();
-});
+router.get(
+  "/google/redirect",
+  passport.authenticate("google", {
+    failureRedirect: "/api/v1/oauths/google/fail",
+  }),
+  oauthController.googleSuccess
+);
+
+router.get("/google/fail", oauthController.googleFail);
 
 export default router;

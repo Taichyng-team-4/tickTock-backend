@@ -4,7 +4,7 @@ import User from "../models/user.js";
 import Email from "../utils/email.js";
 import catchAsync from "../utils/error/catchAsync.js";
 import * as authHelper from "../utils/helper/auth.js";
-import * as errorTable from "../utils/table/error.js";
+import * as errorTable from "../utils/error/errorTable.js";
 
 export const getOne = catchAsync(async (req, res, next) => {
   const newUser = await User.findById(req.params.id);

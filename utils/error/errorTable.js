@@ -1,4 +1,4 @@
-import AppError from "../error/appError.js";
+import AppError from "./appError.js";
 
 export const googleLoginFailError = () =>
   new AppError("Login failed! Please try again later...", 403, "C10010001");
