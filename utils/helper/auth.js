@@ -34,3 +34,8 @@ export const createEmailToken = () => {
 
   return [token, hash];
 };
+
+export const isObjHasEmail = (input) =>
+  input && input.emails && input.emails.length;
+
+export const isObjHasDisplayName = (input) => input && input.displayName;

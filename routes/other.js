@@ -1,11 +1,11 @@
 import express from "express";
 
-import * as otherControllers from "../controllers/otherControllers.js";
+import * as otherController from "../controllers/otherControllers.js";
 
 const router = express.Router();
 
-router.get("/home", otherControllers.getHome);
-router.get("/partners", otherControllers.getPartner);
-router.get("/faqs", otherControllers.getFaqs);
+router.get("/home", otherController.getHome);
+router.get("/partners", otherController.getPartner);
+router.get("/faqs", otherController.getFaqs);
 
 export default router;

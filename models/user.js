@@ -70,6 +70,7 @@ const userSchema = new mongoose.Schema(
       ],
       select: false,
     },
+    googleId: { type: String, select: false, unique: true },
     emailVerifyToken: { type: String, select: false },
     emailValidatedAt: { type: Date, default: undefined },
     passwordUpdatedAt: { type: Date, default: undefined },
