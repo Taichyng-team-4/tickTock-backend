@@ -1,4 +1,47 @@
-import AppError from "../appError.js";
+import AppError from "../error/appError.js";
+
+export const emailAlreadyExistError = () =>
+  new AppError("Email already exists. Login account instead!", 400, "C10020001");
+
+export const notVerifyEmailError = () =>
+  new AppError("Please verify your email first", 400, "G10030001");
+
+export const verifyEmailFailError = () =>
+  new AppError(
+    "Verify email fail. Signup again or try again later!",
+    400,
+    "G10020001"
+  );
+
+export const sendEmailError = () =>
+  new AppError(
+    "There was an error sending the email. Try again later!",
+    500,
+    "B10010001"
+  );
+
+export const updatePasswordFailError = () =>
+  new AppError(
+    "Update password fail! Please try again later",
+    400,
+    "C10020001"
+  );
+
+export const userNotFindError = () =>
+  new AppError("Can not find the user!", 404, "C10010003");
+
+export const emailNotFindError = () =>
+  new AppError("There is no user with taht email address", 404, "C10010003");
+
+export const needToReloginError = () =>
+  new AppError(
+    "Change the password recently, Please login again",
+    403,
+    "A10020001"
+  );
+
+export const authTokenErrorHandler = () =>
+  new AppError("Authentication fail!", 403, "C10010001");
 
 export const undefinedError = () =>
   new AppError("Unknown error happen!", 500, "F10010001");
@@ -6,8 +49,8 @@ export const undefinedError = () =>
 export const wrongFormatError = () =>
   new AppError("Unknown error happen!", 500, "F10010001");
 
-export const loginFailError = () =>
-  new AppError("Authentication fail!", 401, "C10010001");
+export const AuthFailError = () =>
+  new AppError("Authentication fail!", 403, "C10010001");
 
 export const validateError = (input) =>
   new AppError(

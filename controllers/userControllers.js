@@ -1,4 +1,4 @@
-import catchAsync from "../utils/catchAsync.js";
+import catchAsync from "../utils/error/catchAsync.js";
 
 export const signup = catchAsync((req, res, next) => {
   res.status(201).json({

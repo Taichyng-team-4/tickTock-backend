@@ -26,8 +26,8 @@ const systemNoticeSchema = new mongoose.Schema(
 
 systemNoticeSchema
   .virtual("isPublished")
-  .get(() => this.publishAt < new Date.now());
-systemNoticeSchema.virtual("isExpired").get(() => this.expiredAt > new Date.now());
+  .get(() => this.publishAt < Date.now());
+systemNoticeSchema.virtual("isExpired").get(() => this.expiredAt > Date.now());
 
 const SystemNotice = mongoose.model("SystemNotice", systemNoticeSchema);
 

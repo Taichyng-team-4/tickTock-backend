@@ -1,4 +1,4 @@
-import * as errorTable from "../utils/table/error.js"
+import * as errorTable from "../table/error.js";
 
 // Handle dev error
 export const devErrorHandler = (err, res) => {
@@ -50,6 +50,8 @@ export const errorHandler = (err, req, res, next) => {
     customError.name = err.name;
     customError.message = err.message;
 
+    if (customError.name === "JsonWebTokenError")
+      customError = errorTable.authTokenErrorHandler();
     if (customError.name === "CastError")
       customError = errorTable.castErrorHandler(customError);
     if (customError.code === 11000)

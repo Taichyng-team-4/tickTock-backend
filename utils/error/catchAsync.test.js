@@ -1,4 +1,4 @@
-import catchAsync from "../utils/catchAsync";
+import catchAsync from "./catchAsync";
 
 describe("catchAsync", () => {
   let req, res, next, func;

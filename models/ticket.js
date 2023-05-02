@@ -79,12 +79,12 @@ const ticketSchema = new mongoose.Schema(
   }
 );
 
-ticketSchema.virtual("isStart").get(() => this.startAt > new Date.now());
+ticketSchema.virtual("isStart").get(() => this.startAt > Date.now());
 ticketSchema.virtual("isRefunded").get(() => {
   if (!this.refundedAt) return false;
   return true;
 });
-ticketSchema.virtual("isExpired").get(() => this.expiredAt > new Date.now());
+ticketSchema.virtual("isExpired").get(() => this.expiredAt > Date.now());
 
 const Ticket = mongoose.model("Ticket", ticketSchema);
 

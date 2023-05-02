@@ -4,12 +4,13 @@ import cors from "cors";
 import xss from "xss-clean";
 import helmet from "helmet";
 import morgan from "morgan";
+import { fileURLToPath } from "url";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import mongoSanitize from "express-mongo-sanitize";
 
-import AppError from "../utils/appError.js";
+import AppError from "../utils/error/appError.js";
 import userRouters from "../routes/user.js";
 import authRouters from "../routes/auth.js";
 import orgRouters from "../routes/organization.js";
@@ -18,10 +19,16 @@ import newsRouters from "../routes/news.js";
 import orderRouters from "../routes/order.js";
 import ticketRouters from "../routes/ticket.js";
 import otherRouters from "../routes/other.js";
-import { errorHandler } from "../utils/errorHandler.js";
+import { errorHandler } from "../utils/error/errorHandler.js";
 
 import express from "express";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 const app = express();
+
+// View engine
+app.set("view engine", "pug");
+app.set("views", path.join(__dirname, "views"));
 
 // CORS
 app.use(cors());
@@ -65,7 +72,7 @@ app.use(hpp({ whitelist: ["YourParams"] }));
 app.use(compression());
 
 // Serving static file
-app.use("/public/upload", express.static(path.join("public", "upload")));
+app.use(express.static(path.join(__dirname, "public")));
 
 // Routes
 app.use("/api/v1/orgs", orgRouters);
