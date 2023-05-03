@@ -4,8 +4,10 @@ import cors from "cors";
 import xss from "xss-clean";
 import helmet from "helmet";
 import morgan from "morgan";
+import passport from "passport";
 import { fileURLToPath } from "url";
 import compression from "compression";
+import session from "express-session";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import mongoSanitize from "express-mongo-sanitize";
@@ -13,6 +15,7 @@ import mongoSanitize from "express-mongo-sanitize";
 import AppError from "../utils/error/appError.js";
 import userRouters from "../routes/user.js";
 import authRouters from "../routes/auth.js";
+import oauthRouters from "../routes/oauth.js";
 import orgRouters from "../routes/organization.js";
 import activityRouters from "../routes/activity.js";
 import newsRouters from "../routes/news.js";
@@ -20,6 +23,7 @@ import orderRouters from "../routes/order.js";
 import ticketRouters from "../routes/ticket.js";
 import otherRouters from "../routes/other.js";
 import { errorHandler } from "../utils/error/errorHandler.js";
+import "./passportInit.js";
 
 import express from "express";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -68,6 +72,21 @@ app.use(xss());
 // Prevent parameter pollution
 app.use(hpp({ whitelist: ["YourParams"] }));
 
+//Session
+app.use(
+  session({
+    secret: process.env.SESSION_SECRECT,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+// initalize passport
+app.use(passport.initialize());
+
+// deserialize cookie from the browser
+app.use(passport.session());
+
 // Compress send data
 app.use(compression());
 
@@ -79,6 +98,7 @@ app.use("/api/v1/orgs", orgRouters);
 app.use("/api/v1/news", newsRouters);
 app.use("/api/v1/users", userRouters);
 app.use("/api/v1/auths", authRouters);
+app.use("/api/v1/oauths", oauthRouters);
 app.use("/api/v1/orders", orderRouters);
 app.use("/api/v1/tickets", ticketRouters);
 app.use("/api/v1/activities", activityRouters);

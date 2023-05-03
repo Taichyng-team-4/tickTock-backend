@@ -1,17 +1,17 @@
 import express from "express";
 
-import * as orderControllers from "../controllers/orderControllers.js";
+import * as orderController from "../controllers/orderControllers.js";
 
 const router = express.Router();
 
-router.route("/").get(orderControllers.getAll).post(orderControllers.createOne);
+router.route("/").get(orderController.getAll).post(orderController.createOne);
 
 router
   .route("/:orderId")
-  .get(orderControllers.getOne)
-  .patch(orderControllers.updateOne)
-  .delete(orderControllers.deleteOne);
+  .get(orderController.getOne)
+  .patch(orderController.updateOne)
+  .delete(orderController.deleteOne);
 
-router.get("/:orderId/buyersInfo", orderControllers.getBuyersInfo);
+router.get("/:orderId/buyersInfo", orderController.getBuyersInfo);
 
 export default router;

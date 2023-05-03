@@ -1,6 +1,6 @@
 import express from "express";
 import { check } from "express-validator";
-import * as authControllers from "../controllers/authControllers.js";
+import * as authController from "../controllers/authControllers.js";
 import * as shareController from "../controllers/shareControllers.js";
 
 const router = express.Router();
@@ -18,7 +18,7 @@ router.post(
     check("passwordConfirm").isLength({ min: 6 }),
   ],
   shareController.validation,
-  authControllers.signup
+  authController.signup
 );
 router.post(
   "/login",
@@ -27,14 +27,14 @@ router.post(
     check("password").isLength({ min: 6 }),
   ],
   shareController.validation,
-  authControllers.login
+  authController.login
 );
-router.get("/verify_email", authControllers.verify_email);
+router.get("/verify_email", authController.verify_email);
 router.post(
   "/password/forgot",
   [check("email").normalizeEmail().isEmail()],
   shareController.validation,
-  authControllers.forgotPassword
+  authController.forgotPassword
 );
 router.patch(
   "/password/update",
@@ -44,14 +44,14 @@ router.patch(
     check("passwordConfirm").isLength({ min: 6 }),
   ],
   shareController.validation,
-  authControllers.authToken,
-  authControllers.updatePassword
+  authController.authToken,
+  authController.updatePassword
 );
 
-router.get("/", authControllers.getAll);
-router.use(authControllers.authToken);
-router.get("/:id", authControllers.getOne);
+router.get("/", authController.getAll);
+router.use(authController.authToken);
+router.get("/:id", authController.getOne);
 
-router.delete("/:id", authControllers.deleteOne);
+router.delete("/:id", authController.deleteOne);
 
 export default router;

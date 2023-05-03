@@ -1,14 +1,14 @@
 import express from "express";
 
-import * as orgControllers from "../controllers/orgControllers.js";
+import * as orgController from "../controllers/orgControllers.js";
 
 const router = express.Router();
 
-router.route("/").get(orgControllers.getAll).post(orgControllers.createOne);
+router.route("/").get(orgController.getAll).post(orgController.createOne);
 router
   .route("/:orgId")
-  .get(orgControllers.getOne)
-  .put(orgControllers.updateOne)
-  .delete(orgControllers.deleteOne);
+  .get(orgController.getOne)
+  .put(orgController.updateOne)
+  .delete(orgController.deleteOne);
 
 export default router;

@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import * as errorTable from "../table/error.js";
+import * as errorTable from "../error/errorTable.js";
 
 export const santalize = (obj, fields) => {
   let newObj = {};
@@ -34,3 +34,8 @@ export const createEmailToken = () => {
 
   return [token, hash];
 };
+
+export const isObjHasEmail = (input) =>
+  input && input.emails && input.emails.length;
+
+export const isObjHasDisplayName = (input) => input && input.displayName;

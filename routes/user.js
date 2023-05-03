@@ -1,14 +1,14 @@
 import express from "express";
 
-import * as userControllers from "../controllers/userControllers.js";
+import * as userController from "../controllers/userControllers.js";
 
 const router = express.Router();
 
-router.post("/signup", userControllers.signup);
-router.get("/verify_email", userControllers.verify_email);
-router.post("/login", userControllers.login);
-router.patch("/profile", userControllers.profile);
-router.post("/password/forgot", userControllers.forgotPassword);
-router.patch("/password/update", userControllers.updatePassword);
+router.post("/signup", userController.signup);
+router.get("/verify_email", userController.verify_email);
+router.post("/login", userController.login);
+router.patch("/profile", userController.profile);
+router.post("/password/forgot", userController.forgotPassword);
+router.patch("/password/update", userController.updatePassword);
 
 export default router;
