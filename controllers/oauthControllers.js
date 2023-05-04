@@ -22,7 +22,7 @@ export const oauthGoogle = async (accessToken, refreshToken, profile, cb) => {
   if (user) return cb(null, user);
 
   // 4) User already exist but he does not have google login before
-  user = await User.findOne({ email: profile.email }).catch((err) =>
+  user = await User.findOne({ email: profile.emails[0].value }).catch((err) =>
     cb(err, null)
   );
 
