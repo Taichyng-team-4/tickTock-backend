@@ -58,8 +58,7 @@ export const authToken = catchAsync(async (req, res, next) => {
 export const signup = catchAsync(async (req, res, next) => {
   // 1) Santalize the upcoming request
   const requireFields = [
-    "firstName",
-    "lastName",
+    "name",
     "gender",
     "birth",
     "country",
@@ -108,7 +107,7 @@ export const signup = catchAsync(async (req, res, next) => {
   });
 
   // 7) Send an verification email
-  const email = new Email(newUser.email, newUser.firstName);
+  const email = new Email(newUser.email, newUser.name);
   const verifyUrl =
     process.env.SERVER_URL + `/api/v1/auths/verify_email?token=${token}`;
   await email.sendWelcome(verifyUrl).catch((err) => {
@@ -117,12 +116,12 @@ export const signup = catchAsync(async (req, res, next) => {
 
   // 8) Get User
   newUser = await User.findById(newUser._id).select(
-    "-__v -createdAt -updatedAt -passwordUpdatedAt"
+    "-__v -createdAt -updatedAt"
   );
 
   res.status(201).json({
     status: "succress",
-    // data: newUser,
+    data: newUser,
   });
 });
 

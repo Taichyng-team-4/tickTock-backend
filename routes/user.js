@@ -5,7 +5,7 @@ import * as authControllers from "../controllers/authControllers.js";
 import * as userControllers from "../controllers/userControllers.js";
 
 const selectFields =
-  "+email +firstName +lastName +gender " +
+  "+email +name +gender " +
   "+phone +birth +avatar " +
   "-updatedAt -createdAt";
 

@@ -29,13 +29,7 @@ const userSchema = new mongoose.Schema(
       ],
       select: false,
     },
-    firstName: {
-      type: String,
-      required: [true, "A user should has a name"],
-      minLength: [1, "A user name should longer than 1 characters"],
-      maxLength: [250, "A user name should not longer than 250 characters"],
-    },
-    lastName: {
+    name: {
       type: String,
       required: [true, "A user should has a name"],
       minLength: [1, "A user name should longer than 1 characters"],
@@ -89,10 +83,6 @@ const userSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
-
-userSchema.virtual("fullName").get(function () {
-  return `${this.firstName} ${this.lastName}`;
-});
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
