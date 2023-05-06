@@ -67,7 +67,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       select: false,
       unique: true,
-      partialFilterExpression: { googleId: { $type: "string" } },
+      sparse: true,
     },
     emailVerifyToken: { type: String, select: false },
     emailValidatedAt: { type: Date, default: undefined, select: false },
