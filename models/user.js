@@ -58,7 +58,7 @@ const userSchema = new mongoose.Schema(
       required: [true, "A user should provide a phone"],
       select: false,
     },
-    birthday: {
+    birth: {
       type: Date,
       validate: [
         function (val) {
@@ -66,6 +66,7 @@ const userSchema = new mongoose.Schema(
         },
         "Pleas provide a valid birth",
       ],
+      required: [true, "A user should has his birth"],
       select: false,
     },
     googleId: {

@@ -68,6 +68,8 @@ export const signup = catchAsync(async (req, res, next) => {
     "password",
     "passwordConfirm",
   ];
+
+  req.body.birth = authHelper.toUTC(req.body.birth)
   const santalizeResponse = authHelper.santalize(req.body, requireFields);
 
   // 2) Create email verification secret and token
@@ -120,7 +122,7 @@ export const signup = catchAsync(async (req, res, next) => {
 
   res.status(201).json({
     status: "succress",
-    data: newUser,
+    // data: newUser,
   });
 });
 
