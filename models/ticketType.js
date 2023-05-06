@@ -55,6 +55,7 @@ const ticketTypeSchema = new mongoose.Schema(
       default: () => this.total,
     },
     deletedAt: { type: Date, select: false },
+    __v: { type: Number, select: false },
   },
   {
     timestamps: true,

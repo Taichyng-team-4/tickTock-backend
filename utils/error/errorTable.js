@@ -1,10 +1,21 @@
 import AppError from "./appError.js";
 
+export const notAllowUpdateError = (notAllowFields) =>
+  new AppError(
+    `Not allow to update ${notAllowFields.join(", ")}`,
+    400,
+    "C10020001"
+  );
+
 export const googleLoginFailError = () =>
   new AppError("Login failed! Please try again later...", 403, "C10010001");
 
 export const emailAlreadyExistError = () =>
-  new AppError("Email already exists. Login account instead!", 400, "C10020001");
+  new AppError(
+    "Email already exists. Login account instead!",
+    400,
+    "C10020001"
+  );
 
 export const notVerifyEmailError = () =>
   new AppError("Please verify your email first", 400, "G10030001");

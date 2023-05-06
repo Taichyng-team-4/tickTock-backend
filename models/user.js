@@ -75,9 +75,11 @@ const userSchema = new mongoose.Schema(
       partialFilterExpression: { googleId: { $type: "string" } },
     },
     emailVerifyToken: { type: String, select: false },
-    emailValidatedAt: { type: Date, default: undefined },
-    passwordUpdatedAt: { type: Date, default: undefined },
+    emailValidatedAt: { type: Date, default: undefined, select: false },
+    isEmailValidated: { type: Boolean, default: false, select: false },
+    passwordUpdatedAt: { type: Date, default: undefined, select: false },
     deletedAt: { type: Date, default: undefined },
+    __v: { type: Number, select: false },
   },
   {
     id: false,
@@ -89,11 +91,6 @@ const userSchema = new mongoose.Schema(
 
 userSchema.virtual("fullName").get(function () {
   return `${this.firstName} ${this.lastName}`;
-});
-
-userSchema.virtual("isEmailValidated").get(function () {
-  if (!this.emailValidatedAt) return false;
-  return true;
 });
 
 userSchema.pre("save", async function (next) {
@@ -109,6 +106,13 @@ userSchema.pre("save", function (next) {
   if (!this.isModified("password") || this.isNew) return next();
 
   this.passwordUpdatedAt = Date.now() - 1000;
+  next();
+});
+
+userSchema.pre("save", function (next) {
+  if (!this.isModified("emailValidatedAt")) return next();
+
+  this.isEmailValidated = true;
   next();
 });
 

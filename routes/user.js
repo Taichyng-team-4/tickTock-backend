@@ -1,14 +1,25 @@
 import express from "express";
+import User from "../models/user.js";
+import * as factory from "../controllers/factory.js";
+import * as authControllers from "../controllers/authControllers.js";
+import * as userControllers from "../controllers/userControllers.js";
 
-import * as userController from "../controllers/userControllers.js";
+const selectFields =
+  "+email +firstName +lastName +gender " +
+  "+phone +birthday +avatar " +
+  "-updatedAt -createdAt";
 
 const router = express.Router();
 
-router.post("/signup", userController.signup);
-router.get("/verify_email", userController.verify_email);
-router.post("/login", userController.login);
-router.patch("/profile", userController.profile);
-router.post("/password/forgot", userController.forgotPassword);
-router.patch("/password/update", userController.updatePassword);
+router.use(authControllers.authToken);
+
+router
+  .route("/")
+  .get(userControllers.getMe, factory.getOne(User, selectFields))
+  .patch(
+    userControllers.getMe,
+    userControllers.updateOne,
+    factory.getOne(User, selectFields)
+  );
 
 export default router;

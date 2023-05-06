@@ -76,7 +76,7 @@ export const signup = catchAsync(async (req, res, next) => {
   // 3) Check if user exist
   const user = await User.findOne({
     email: santalizeResponse.email,
-  });
+  }).select("+isEmailValidated");
 
   // 4) If user exist, then check if user email validation
   let newUser;
@@ -157,7 +157,7 @@ export const login = catchAsync(async (req, res, next) => {
   // 1) Check if user exists by his email
   const user = await User.findOne({
     email,
-  }).select("+password");
+  }).select("+password +isEmailValidated");
   if (!user) throw errorTable.AuthFailError();
 
   // 2) Check if user validate his email
