@@ -53,12 +53,12 @@ npm i
 
 ## 專案運行
 
-### dev
+### dev mode
 ```
 npm run start:dev
 ```
 
-### prod
+### prod mode
 ```
 npm run start:prod
 ```
@@ -110,9 +110,8 @@ GOOGLE_CLIENT_SECRET = gcp 密碼
 ```
 
 ## 套件使用
-
-Node.js v18.15.0
-express.js V4.18.2
-mongoose v7.0.5
-vitest v0.30.1
-pug v3.0.2
+- Node.js v18.15.0
+- express.js V4.18.2
+- mongoose v7.0.5
+- vitest v0.30.1
+- pug v3.0.2
