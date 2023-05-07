@@ -10,6 +10,11 @@
 
 node >= 12
 
+## DB Schema
+
+![ticktock](https://user-images.githubusercontent.com/105664533/236652970-e86850ec-1526-4b99-af51-66138dc68b6c.svg)
+
+
 ### 分支規則
 
 1. 主分支命名 **`master`**。
