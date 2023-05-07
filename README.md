@@ -78,6 +78,7 @@ npm test
 
 ## 環境變數設定
 
+```env
 APP_ENV = app執行模式
 PORT = app 監聽port
 SESSION_SECRECT = session密碼
@@ -106,6 +107,7 @@ DEV_EMAIL_PROVIDER_ADDRESS = 寄件人
 
 GOOGLE_CLIENT_ID = gcp 帳號
 GOOGLE_CLIENT_SECRET = gcp 密碼
+```
 
 ## 套件使用
 
