@@ -2,11 +2,11 @@
   "name": "example",
   "version": "1.0.0",
   "type": "module",
-  "description": "It's just an example",
+  "description": "tickTock for taichung team 4 side project",
   "main": "app.js",
   "scripts": {
     "start:dev": "SET APP_ENV=dev&& nodemon server.js",
-    "start:prod": "nodemon server.js",
+    "start": "nodemon server.js",
     "test": "vitest --globals --coverage --run --reporter verbose",
     "test:watch": "vitest --globals"
   },

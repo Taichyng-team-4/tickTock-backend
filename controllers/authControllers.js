@@ -58,8 +58,7 @@ export const authToken = catchAsync(async (req, res, next) => {
 export const signup = catchAsync(async (req, res, next) => {
   // 1) Santalize the upcoming request
   const requireFields = [
-    "firstName",
-    "lastName",
+    "name",
     "gender",
     "birth",
     "country",
@@ -68,6 +67,8 @@ export const signup = catchAsync(async (req, res, next) => {
     "password",
     "passwordConfirm",
   ];
+
+  req.body.birth = authHelper.toUTC(req.body.birth)
   const santalizeResponse = authHelper.santalize(req.body, requireFields);
 
   // 2) Create email verification secret and token
@@ -76,7 +77,7 @@ export const signup = catchAsync(async (req, res, next) => {
   // 3) Check if user exist
   const user = await User.findOne({
     email: santalizeResponse.email,
-  });
+  }).select("+isEmailValidated");
 
   // 4) If user exist, then check if user email validation
   let newUser;
@@ -106,16 +107,16 @@ export const signup = catchAsync(async (req, res, next) => {
   });
 
   // 7) Send an verification email
-  const email = new Email(newUser.email, newUser.firstName);
-  const verifyUrl = `${req.protocol}://${req.hostname}:${process.env.PORT}/api/v1/auths/verify_email?token=${token}`;
+  const email = new Email(newUser.email, newUser.name);
+  const verifyUrl =
+    process.env.SERVER_URL + `/api/v1/auths/verify_email?token=${token}`;
   await email.sendWelcome(verifyUrl).catch((err) => {
-    console.log(err)
     throw errorTable.sendEmailError();
   });
 
   // 8) Get User
   newUser = await User.findById(newUser._id).select(
-    "-__v -createdAt -updatedAt -passwordUpdatedAt"
+    "-__v -createdAt -updatedAt"
   );
 
   res.status(201).json({
@@ -148,7 +149,7 @@ export const verify_email = catchAsync(async (req, res, next) => {
   user.emailValidatedAt = Date.now();
   await user.save();
 
-  res.redirect(`${req.protocol}://${req.hostname}:${process.env.PORT}`);
+  return res.redirect("https://www.google.com/");
 });
 
 export const login = catchAsync(async (req, res, next) => {
@@ -157,7 +158,7 @@ export const login = catchAsync(async (req, res, next) => {
   // 1) Check if user exists by his email
   const user = await User.findOne({
     email,
-  }).select("+password");
+  }).select("+password +isEmailValidated");
   if (!user) throw errorTable.AuthFailError();
 
   // 2) Check if user validate his email

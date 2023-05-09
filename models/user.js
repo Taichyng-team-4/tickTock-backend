@@ -29,13 +29,7 @@ const userSchema = new mongoose.Schema(
       ],
       select: false,
     },
-    firstName: {
-      type: String,
-      required: [true, "A user should has a name"],
-      minLength: [1, "A user name should longer than 1 characters"],
-      maxLength: [250, "A user name should not longer than 250 characters"],
-    },
-    lastName: {
+    name: {
       type: String,
       required: [true, "A user should has a name"],
       minLength: [1, "A user name should longer than 1 characters"],
@@ -58,7 +52,7 @@ const userSchema = new mongoose.Schema(
       required: [true, "A user should provide a phone"],
       select: false,
     },
-    birthday: {
+    birth: {
       type: Date,
       validate: [
         function (val) {
@@ -66,13 +60,21 @@ const userSchema = new mongoose.Schema(
         },
         "Pleas provide a valid birth",
       ],
+      required: [true, "A user should has his birth"],
       select: false,
     },
-    googleId: { type: String, select: false, unique: true },
+    googleId: {
+      type: String,
+      select: false,
+      unique: true,
+      sparse: true,
+    },
     emailVerifyToken: { type: String, select: false },
-    emailValidatedAt: { type: Date, default: undefined },
-    passwordUpdatedAt: { type: Date, default: undefined },
+    emailValidatedAt: { type: Date, default: undefined, select: false },
+    isEmailValidated: { type: Boolean, default: false, select: false },
+    passwordUpdatedAt: { type: Date, default: undefined, select: false },
     deletedAt: { type: Date, default: undefined },
+    __v: { type: Number, select: false },
   },
   {
     id: false,
@@ -81,15 +83,6 @@ const userSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
-
-userSchema.virtual("fullName").get(function () {
-  return `${this.firstName} ${this.lastName}`;
-});
-
-userSchema.virtual("isEmailValidated").get(function () {
-  if (!this.emailValidatedAt) return false;
-  return true;
-});
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
@@ -104,6 +97,13 @@ userSchema.pre("save", function (next) {
   if (!this.isModified("password") || this.isNew) return next();
 
   this.passwordUpdatedAt = Date.now() - 1000;
+  next();
+});
+
+userSchema.pre("save", function (next) {
+  if (!this.isModified("emailValidatedAt")) return next();
+
+  this.isEmailValidated = true;
   next();
 });
 

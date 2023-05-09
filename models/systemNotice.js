@@ -20,6 +20,7 @@ const systemNoticeSchema = new mongoose.Schema(
       require: [true, "An system notice should has a expiration date"],
     },
     deletedAt: { type: Date, select: false },
+    __v: { type: Number, select: false },
   },
   { timestamps: true }
 );

@@ -24,6 +24,7 @@ const activityNoticeSchema = new mongoose.Schema(
       require: [true, "An activity notice should has a expiration date"],
     },
     deletedAt: { type: Date, select: false },
+    __v: { type: Number, select: false },
   },
   {
     timestamps: true,

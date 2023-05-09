@@ -23,6 +23,7 @@ const ticketListSchema = new mongoose.Schema(
       unique: false,
     },
     deletedAt: { type: Date, select: false },
+    __v: { type: Number, select: false },
   },
   {
     timestamps: true,

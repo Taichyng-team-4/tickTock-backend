@@ -19,6 +19,7 @@ const partnerSchema = new mongoose.Schema(
       validate: [validator.isURL, "The partner link should be an url"],
     },
     deletedAt: { type: Date, select: false },
+    __v: { type: Number, select: false },
   },
   { timestamps: true }
 );
