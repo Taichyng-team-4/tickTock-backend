@@ -1,50 +1,26 @@
+import User from "../models/user.js";
 import catchAsync from "../utils/error/catchAsync.js";
 
-export const signup = catchAsync((req, res, next) => {
+export const getOne = catchAsync(async (req, res, next) => {
+  const newUser = await User.findById(req.params.id);
+
   res.status(201).json({
-    status: "success",
-    code: "201",
-    message: "Sign up account successfully",
+    status: "succress",
+    data: newUser,
   });
 });
 
-export const verify_email = catchAsync((req, res, next) => {
-  res.status(200).json({
-    status: "success",
-    code: "200",
-    message: "Validate email successfully!",
+export const getAll = catchAsync(async (req, res, next) => {
+  const newUser = await User.find({});
+
+  res.status(201).json({
+    status: "succress",
+    data: newUser,
   });
 });
 
-export const login = catchAsync((req, res, next) => {
-  res.status(200).json({
-    status: "success",
-    code: "200",
-    message: "Login account successfully",
-    token: "yourToken",
-  });
-});
+export const deleteOne = catchAsync(async (req, res, next) => {
+  await User.deleteOne({ _id: req.params.id });
 
-export const profile = catchAsync((req, res, next) => {
-  res.status(200).json({
-    status: "success",
-    code: "200",
-    message: "Update account successfully",
-  });
-});
-
-export const forgotPassword = catchAsync((req, res, next) => {
-  res.status(200).json({
-    status: "success",
-    code: "200",
-    message: "New passowrd has sent to your email",
-  });
-});
-
-export const updatePassword = catchAsync((req, res, next) => {
-  res.status(200).json({
-    status: "success",
-    code: "200",
-    message: "Update password successfully",
-  });
+  res.status(204).json();
 });

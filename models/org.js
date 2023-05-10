@@ -41,7 +41,7 @@ const orgSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    deletedAt: { type: Date, select: false },
+    deletedAt: { type: Date, select: false, default: Date.now },
   },
   {
     timestamps: true,
@@ -52,4 +52,4 @@ const orgSchema = new mongoose.Schema(
 
 const Org = mongoose.model("Org", orgSchema);
 
-module.exports = Org;
+export default Org;
