@@ -1,5 +1,5 @@
 class queryFeatures {
-  constructor(query, demand) {
+  constructor(query, demand = {}) {
     this.query = query;
     this.demand = demand;
   }

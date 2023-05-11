@@ -44,10 +44,13 @@ export const createOne = (Model) =>
 
 export const updateOne = (Model) =>
   catchAsync(async (req, res, next) => {
-    const data = await Model.findByIdAndUpdate(req.params.id, req.body, {
+    const updateQuery = Model.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
-    }).select("-createdAt -updatedAt -__v");
+    });
+    const features = new queryFeatures(updateQuery).select();
+
+    const data = await features.query;
     if (!data) throw errorTable.idNotFoundError();
 
     res.status(200).json({
