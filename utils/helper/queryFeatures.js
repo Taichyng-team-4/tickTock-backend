@@ -1,7 +1,29 @@
+import * as helper from "../helper/helper.js";
+
 class queryFeatures {
   constructor(query, demand = {}) {
     this.query = query;
     this.demand = demand;
+  }
+
+  filter() {
+    const queryObj = helper.removeObjKeys(this.demand, [
+      "page",
+      "sort",
+      "limit",
+      "fields",
+    ]);
+
+    // Sanitize the mongoose operator
+    const queryStr = helper.replaceMongooseOpt(queryObj, [
+      "gte",
+      "gt",
+      "lte",
+      "lt",
+    ]);
+
+    this.query = this.query.find(queryStr);
+    return this;
   }
 
   select() {
@@ -42,6 +64,11 @@ class queryFeatures {
 
     this.query = this.query.skip(skip).limit(limit);
 
+    return this;
+  }
+
+  populate(populate) {
+    this.query.populate(populate);
     return this;
   }
 }

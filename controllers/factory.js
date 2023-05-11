@@ -7,6 +7,7 @@ export const getOne = (Model, populate) =>
   catchAsync(async (req, res, next) => {
     const features = new queryFeatures(Model.findById(req.params.id), req.query)
       .select()
+      .populate(populate)
       .includeDeleted();
     const data = await features.query;
     if (!data) throw errorTable.idNotFoundError();
@@ -19,9 +20,11 @@ export const getOne = (Model, populate) =>
 export const getAll = (Model, populate) =>
   catchAsync(async (req, res, next) => {
     const features = new queryFeatures(Model.find({}), req.query)
+      .filter()
       .select()
       .sort()
       .paginate()
+      .populate(populate)
       .includeDeleted();
     const data = await features.query;
 
