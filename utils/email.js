@@ -2,28 +2,20 @@ import pug from "pug";
 import path from "path";
 import { fileURLToPath } from "url";
 import nodemailer from "nodemailer";
+import sgMail from "@sendgrid/mail";
+
+sgMail.setApiKey(process.env.EMAIL_PASSWORD);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default class Email {
   constructor(email, name) {
     this.to = email;
     this.name = name;
-    this.from = `tickTock <${process.env.EMAIL_PROVIDER_ADDRESS}>`;
+    this.from = `${process.env.EMAIL_PROVIDER_ADDRESS}`;
   }
 
   //Setting the email transportation info
   newTransport() {
-    if (process.env.APP_ENV === "prod") {
-      return nodemailer.createTransport({
-        service: process.env.EMAIL_HOST,
-        port: process.env.EMAIL_PORT,
-        auth: {
-          user: process.env.EMAIL_USERNAME,
-          pass: process.env.EMAIL_PASSWORD,
-        },
-      });
-    }
-
     return nodemailer.createTransport({
       host: process.env.DEV_EMAIL_HOST,
       port: process.env.DEV_EMAIL_PORT,
@@ -36,12 +28,15 @@ export default class Email {
 
   // Send the self-define email
   async send(subject, message) {
-    await this.newTransport().sendMail({
+    const mailOptions = {
       from: this.from,
       to: this.to,
       subject,
       html: `${message}`,
-    });
+    };
+
+    if (process.env.APP_ENV === "prod") await sgMail.send(mailOptions);
+    else await this.newTransport().sendMail(mailOptions);
   }
 
   async sendWelcome(verifyUrl) {
@@ -61,6 +56,7 @@ export default class Email {
     };
 
     // 3) Create a transport and send email
-    await this.newTransport().sendMail(mailOptions);
+    if (process.env.APP_ENV === "prod") await sgMail.send(mailOptions);
+    else await this.newTransport().sendMail(mailOptions);
   }
 }

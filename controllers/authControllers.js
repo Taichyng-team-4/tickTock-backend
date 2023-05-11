@@ -19,7 +19,6 @@ export const authToken = catchAsync(async (req, res, next) => {
 
   // 3) Verify token
   const decodeToken = authHelper.decodeJWT(token);
-  console.log(decodeToken)
 
   // 4) Check if User exist
   const user = await User.findById(decodeToken.id);
