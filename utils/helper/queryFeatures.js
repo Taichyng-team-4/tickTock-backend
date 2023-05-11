@@ -4,6 +4,7 @@ class queryFeatures {
   constructor(query, demand = {}) {
     this.query = query;
     this.demand = demand;
+
   }
 
   filter() {
@@ -29,7 +30,6 @@ class queryFeatures {
   select() {
     if (this.demand.fields) {
       const fields = this.demand.fields.split(",");
-
       if (!fields.includes("__v")) fields.push("-__v");
       if (!fields.includes("createdAt")) fields.push("-createdAt");
       if (!fields.includes("updatedAt")) fields.push("-updatedAt");

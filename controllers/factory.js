@@ -51,7 +51,7 @@ export const updateOne = (Model) =>
       new: true,
       runValidators: true,
     });
-    const features = new queryFeatures(updateQuery).select();
+    const features = new queryFeatures(updateQuery, req.query).select();
 
     const data = await features.query;
     if (!data) throw errorTable.idNotFoundError();
