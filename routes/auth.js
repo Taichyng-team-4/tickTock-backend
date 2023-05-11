@@ -47,10 +47,4 @@ router.patch(
   authController.updatePassword
 );
 
-router.get("/", authController.getAll);
-router.use(authController.authToken);
-router.get("/:id", authController.getOne);
-
-router.delete("/:id", authController.deleteOne);
-
 export default router;

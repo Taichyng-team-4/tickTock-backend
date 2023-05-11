@@ -1,16 +1,69 @@
+import * as helper from "../utils/helper/helper.js";
 import catchAsync from "../utils/error/catchAsync.js";
+import * as errorTable from "../utils/error/errorTable.js";
+import queryFeatures from "../utils/helper/queryFeatures.js";
 
-export const getOne = (Model, select) =>
+export const getOne = (Model, populate) =>
   catchAsync(async (req, res, next) => {
-    const data = await Model.findById(req.params.id, select);
+    const features = new queryFeatures(Model.findById(req.params.id), req.query)
+      .select()
+      .populate(populate)
+      .includeDeleted();
+    const data = await features.query;
+    if (!data) throw errorTable.idNotFoundError();
+
+    res
+      .status(200)
+      .json({ status: "success", data: helper.removeDocObjId(data) });
+  });
+
+export const getAll = (Model, populate) =>
+  catchAsync(async (req, res, next) => {
+    const features = new queryFeatures(Model.find({}), req.query)
+      .filter()
+      .select()
+      .sort()
+      .paginate()
+      .populate(populate)
+      .includeDeleted();
+    const data = await features.query;
 
     res.status(200).json({
-      code: 200,
       status: "success",
-      data,
+      count: data.length,
+      data: helper.removeDocsObjId(data),
     });
   });
-export const getAll = catchAsync((req, res, next) => {});
-export const createOne = catchAsync((req, res, next) => {});
-export const updateOne = catchAsync((req, res, next) => {});
-export const deleteOne = catchAsync((req, res, next) => {});
+
+export const createOne = (Model) =>
+  catchAsync(async (req, res, next) => {
+    const data = await Model.create(req.body);
+
+    res.status(200).json({
+      status: "success",
+      data: helper.sanitizeCreatedDoc(data),
+    });
+  });
+
+export const updateOne = (Model) =>
+  catchAsync(async (req, res, next) => {
+    const updateQuery = Model.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    const features = new queryFeatures(updateQuery).select();
+
+    const data = await features.query;
+    if (!data) throw errorTable.idNotFoundError();
+
+    res.status(200).json({
+      status: "success",
+      data: helper.removeDocObjId(data),
+    });
+  });
+
+export const deleteOne = (Model) =>
+  catchAsync(async (req, res, next) => {
+    await Model.findByIdAndUpdate(req.params.id, { deletedAt: Date.now() });
+    res.status(204).json({});
+  });

@@ -16,7 +16,7 @@ import AppError from "../utils/error/appError.js";
 import userRouters from "../routes/user.js";
 import authRouters from "../routes/auth.js";
 import oauthRouters from "../routes/oauth.js";
-import orgRouters from "../routes/organization.js";
+import orgRouters from "../routes/orgs.js";
 import activityRouters from "../routes/activity.js";
 import newsRouters from "../routes/news.js";
 import orderRouters from "../routes/order.js";
