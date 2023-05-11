@@ -8,7 +8,7 @@ export const notAllowUpdateError = (notAllowFields) =>
   );
 
 export const idNotFoundError = () =>
-  new AppError("No data found with that ID.", 404);
+  new AppError("No data found with that ID.", 404, "C10010001");
 
 export const googleLoginFailError = () =>
   new AppError("Login failed! Please try again later...", 403, "C10010001");
