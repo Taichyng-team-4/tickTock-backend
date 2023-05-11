@@ -14,6 +14,7 @@ import mongoSanitize from "express-mongo-sanitize";
 
 import AppError from "../utils/error/appError.js";
 import userRouters from "../routes/user.js";
+import profileRouters from "../routes/profile.js";
 import authRouters from "../routes/auth.js";
 import oauthRouters from "../routes/oauth.js";
 import orgRouters from "../routes/orgs.js";
@@ -97,6 +98,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/api/v1/orgs", orgRouters);
 app.use("/api/v1/news", newsRouters);
 app.use("/api/v1/users", userRouters);
+app.use("/api/v1/profile", profileRouters);
 app.use("/api/v1/auths", authRouters);
 app.use("/api/v1/oauths", oauthRouters);
 app.use("/api/v1/orders", orderRouters);
