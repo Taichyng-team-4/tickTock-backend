@@ -1,14 +1,15 @@
 import * as helper from "../utils/helper/helper.js";
 import catchAsync from "../utils/error/catchAsync.js";
 import * as errorTable from "../utils/error/errorTable.js";
+import queryFeatures from "../utils/helper/queryFeatures.js";
 
 export const getOne = (Model, populate) =>
   catchAsync(async (req, res, next) => {
-    const data = await helper.getFindByIdQuery({
-      Model,
-      id: req.params.id,
-      populate,
-    });
+    const features = new queryFeatures(
+      Model.findById(req.params.id),
+      req.query
+    ).select();
+    const data = await features.query;
     if (!data) throw errorTable.idNotFoundError();
 
     res
@@ -18,7 +19,8 @@ export const getOne = (Model, populate) =>
 
 export const getAll = (Model, populate) =>
   catchAsync(async (req, res, next) => {
-    const data = await helper.getFindQuery({ Model, populate });
+    const features = new queryFeatures(Model.find({}), req.query).select();
+    const data = await features.query;
 
     res.status(200).json({
       status: "success",
@@ -61,11 +63,10 @@ export const deleteOne = (Model) =>
 
 export const getOneWithDeleted = (Model, populate) =>
   catchAsync(async (req, res, next) => {
-    const data = await helper.getFindByIdQueryWithDeleted({
-      Model,
-      id: req.params.id,
-      populate,
-    });
+    const features = new queryFeatures(Model.findById(req.params.id), req.query)
+      .select()
+      .includeDeleted();
+    const data = await features.query;
     if (!data) throw errorTable.idNotFoundError();
 
     res
@@ -75,7 +76,10 @@ export const getOneWithDeleted = (Model, populate) =>
 
 export const getAllWithDeleted = (Model, populate) =>
   catchAsync(async (req, res, next) => {
-    const data = await helper.getFindQueryWithDeleted({ Model, populate });
+    const features = new queryFeatures(Model.find({}), req.query)
+      .select()
+      .includeDeleted();
+    const data = await features.query;
 
     res.status(200).json({
       status: "success",
