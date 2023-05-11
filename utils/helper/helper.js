@@ -9,7 +9,7 @@ export const removeDocKeys = (obj, keys) =>
   });
 
 export const sanitizeCreatedDoc = (obj) =>
-  removeDocKeys(obj, ["_id", "__v", "deletedAt", "createdAt", "updatedAt"]);
+  removeDocKeys(obj, ["_id", "__v", "createdAt", "updatedAt"]);
 
 export const removeDocObjId = (obj) => removeDocKeys(obj, ["_id"]);
 
