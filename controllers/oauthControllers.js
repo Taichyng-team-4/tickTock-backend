@@ -13,20 +13,18 @@ export const oauthGoogle = async (accessToken, refreshToken, profile, cb) => {
     return cb(errorTable.googleLoginFailError(), null);
   }
 
-  // 2) Check if the user already exist
+  // 2) Check if the user already login by google before
   user = await User.findOne({ googleId: profile.id }).catch((err) =>
     cb(err, null)
   );
-
-  // 3) Get the user information by oauth
   if (user) return cb(null, user);
 
-  // 4) User already exist but he does not have google login before
-  user = await User.findOne({ email: profile.email }).catch((err) =>
+  // 3) user already exist but he does not login google before
+  user = await User.findOne({ email: profile.emails[0].value }).catch((err) =>
     cb(err, null)
   );
 
-  // 5) Record the google id about the user
+  // 4) Record the google id about the user
   if (user) {
     user.googleId = profile.id;
     await user.save();
@@ -34,7 +32,7 @@ export const oauthGoogle = async (accessToken, refreshToken, profile, cb) => {
     return cb(null, user);
   }
 
-  // 6) New user, create an account for him
+  // 5) New user, create an account for him
   user = new User({
     email: profile.emails[0].value,
     googleId: profile.id,
@@ -58,7 +56,7 @@ export const googleSuccess = catchAsync((req, res, next) => {
     if (err) return next(err);
 
     // 4) Send the info to frontend
-    return res.redirect("https://www.youtube.com/");
+    return res.redirect("https://www.google.com/");
   });
 });
 

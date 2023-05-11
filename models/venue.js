@@ -29,6 +29,7 @@ const venueSchema = new mongoose.Schema(
       validate: [validator.isURL, "The venue seat map should be an url"],
     },
     deletedAt: { type: Date, select: false },
+    __v: { type: Number, select: false}
   },
   { timestamps: true }
 );

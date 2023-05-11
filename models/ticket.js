@@ -71,6 +71,7 @@ const ticketSchema = new mongoose.Schema(
       require: [true, "A ticket should mark the expired date"],
     },
     deletedAt: { type: Date, select: false },
+    __v: { type: Number, select: false },
   },
   {
     timestamps: true,

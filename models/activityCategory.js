@@ -19,6 +19,7 @@ const activityCategorySchema = new mongoose.Schema(
       ],
     },
     deletedAt: { type: Date, select: false },
+    __v: { type: Number, select: false },
   },
   { timestamps: true }
 );

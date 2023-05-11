@@ -41,7 +41,9 @@ const orgSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    deletedAt: { type: Date, select: false, default: Date.now },
+    deletedAt: { type: Date, select: false },
+    __v: { type: Number, select: false },
+
   },
   {
     timestamps: true,
