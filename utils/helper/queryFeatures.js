@@ -20,7 +20,7 @@ class queryFeatures {
   }
 
   includeDeleted() {
-    this.query.$locals = { getDeleted: true };
+    if (!!+this.demand.deleted) this.query.$locals = { getDeleted: true };
     return this;
   }
 

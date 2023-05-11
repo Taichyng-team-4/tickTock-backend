@@ -5,10 +5,9 @@ import queryFeatures from "../utils/helper/queryFeatures.js";
 
 export const getOne = (Model, populate) =>
   catchAsync(async (req, res, next) => {
-    const features = new queryFeatures(
-      Model.findById(req.params.id),
-      req.query
-    ).select();
+    const features = new queryFeatures(Model.findById(req.params.id), req.query)
+      .select()
+      .includeDeleted();
     const data = await features.query;
     if (!data) throw errorTable.idNotFoundError();
 
@@ -22,7 +21,8 @@ export const getAll = (Model, populate) =>
     const features = new queryFeatures(Model.find({}), req.query)
       .select()
       .sort()
-      .paginate();
+      .paginate()
+      .includeDeleted();
     const data = await features.query;
 
     res.status(200).json({
@@ -60,35 +60,4 @@ export const deleteOne = (Model) =>
   catchAsync(async (req, res, next) => {
     await Model.findByIdAndUpdate(req.params.id, { deletedAt: Date.now() });
     res.status(204).json({});
-  });
-
-// ------------------------------------------------------------------------------------
-
-export const getOneWithDeleted = (Model, populate) =>
-  catchAsync(async (req, res, next) => {
-    const features = new queryFeatures(Model.findById(req.params.id), req.query)
-      .select()
-      .includeDeleted();
-    const data = await features.query;
-    if (!data) throw errorTable.idNotFoundError();
-
-    res
-      .status(200)
-      .json({ status: "success", data: helper.removeDocObjId(data) });
-  });
-
-export const getAllWithDeleted = (Model, populate) =>
-  catchAsync(async (req, res, next) => {
-    const features = new queryFeatures(Model.find({}), req.query)
-      .select()
-      .sort()
-      .paginate()
-      .includeDeleted();
-    const data = await features.query;
-
-    res.status(200).json({
-      status: "success",
-      count: data.length,
-      data: helper.removeDocsObjId(data),
-    });
   });
