@@ -65,6 +65,8 @@ export const getOneWithDeleted = (Model, populate) =>
   catchAsync(async (req, res, next) => {
     const features = new queryFeatures(Model.findById(req.params.id), req.query)
       .select()
+      .sort()
+      .paginate()
       .includeDeleted();
     const data = await features.query;
     if (!data) throw errorTable.idNotFoundError();
@@ -78,6 +80,8 @@ export const getAllWithDeleted = (Model, populate) =>
   catchAsync(async (req, res, next) => {
     const features = new queryFeatures(Model.find({}), req.query)
       .select()
+      .sort()
+      .paginate()
       .includeDeleted();
     const data = await features.query;
 
