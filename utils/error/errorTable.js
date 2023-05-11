@@ -1,12 +1,16 @@
 import AppError from "./appError.js";
 
+
+export const idNotFoundError = () =>
+  new AppError("No data found with that ID.", 404,
+    "C10010001");
+
 export const notAllowUpdateError = (notAllowFields) =>
   new AppError(
     `Not allow to update ${notAllowFields.join(", ")}`,
     400,
     "C10020001"
   );
-
 export const googleLoginFailError = () =>
   new AppError("Login failed! Please try again later...", 403, "C10010001");
 

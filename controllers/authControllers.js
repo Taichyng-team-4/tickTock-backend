@@ -1,34 +1,10 @@
 import crypto from "crypto";
-import passwordGenerator from "generate-password";
 import User from "../models/user.js";
+import passwordGenerator from "generate-password";
 import Email from "../utils/email.js";
 import catchAsync from "../utils/error/catchAsync.js";
 import * as authHelper from "../utils/helper/auth.js";
 import * as errorTable from "../utils/error/errorTable.js";
-
-export const getOne = catchAsync(async (req, res, next) => {
-  const newUser = await User.findById(req.params.id);
-
-  res.status(201).json({
-    status: "succress",
-    data: newUser,
-  });
-});
-
-export const getAll = catchAsync(async (req, res, next) => {
-  const newUser = await User.find({});
-
-  res.status(201).json({
-    status: "succress",
-    data: newUser,
-  });
-});
-
-export const deleteOne = catchAsync(async (req, res, next) => {
-  await User.deleteOne({ _id: req.params.id });
-
-  res.status(204).json();
-});
 
 export const authToken = catchAsync(async (req, res, next) => {
   let token;
