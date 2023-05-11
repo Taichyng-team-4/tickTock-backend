@@ -16,5 +16,3 @@ export const checkUpdatedProfile = catchAsync(async (req, res, next) => {
   userHelper.checkUpdateFields(req.body, notAllowFields);
   next();
 });
-
-
