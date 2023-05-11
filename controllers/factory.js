@@ -19,7 +19,10 @@ export const getOne = (Model, populate) =>
 
 export const getAll = (Model, populate) =>
   catchAsync(async (req, res, next) => {
-    const features = new queryFeatures(Model.find({}), req.query).select();
+    const features = new queryFeatures(Model.find({}), req.query)
+      .select()
+      .sort()
+      .paginate();
     const data = await features.query;
 
     res.status(200).json({
@@ -65,8 +68,6 @@ export const getOneWithDeleted = (Model, populate) =>
   catchAsync(async (req, res, next) => {
     const features = new queryFeatures(Model.findById(req.params.id), req.query)
       .select()
-      .sort()
-      .paginate()
       .includeDeleted();
     const data = await features.query;
     if (!data) throw errorTable.idNotFoundError();
