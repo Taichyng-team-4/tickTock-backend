@@ -1,22 +1,41 @@
 import express from "express";
-
-import * as activityController from "../controllers/activityControllers.js";
-import ticketTypeRouter from "./ticketType.js";
+import { check } from "express-validator";
+import Activity from "../models/activity.js";
+import * as factory from "../controllers/factory.js";
+import * as authControllers from "../controllers/authControllers.js";
+import * as shareControllers from "../controllers/shareControllers.js";
+import * as activityControllers from "../controllers/activityControllers.js";
 
 const router = express.Router();
 
-router.use("/:activityId/ticket_types", ticketTypeRouter);
-
 router
   .route("/")
-  .get(activityController.getAll)
-  .post(activityController.createOne);
+  .get(factory.getAll(Activity))
+  .post(
+    [
+      check("orgId").notEmpty(),
+      check("category").notEmpty(),
+      check("name").notEmpty(),
+      check("startAt").notEmpty(),
+      check("endAt").notEmpty(),
+    ],
+    shareControllers.validation,
+    authControllers.authToken,
+    activityControllers.createOne
+  );
 
 router
-  .route("/:activityId")
-  .get(activityController.getOne)
-  .put(activityController.updateOne)
-  .delete(activityController.deleteOne);
+  .route("/:id")
+  .get(factory.getOne(Activity))
+  .patch(
+    authControllers.authToken,
+    activityControllers.checkOwner,
+    activityControllers.updateOne
+  )
+  .delete(
+    authControllers.authToken,
+    activityControllers.checkOwner,
+    activityControllers.deleteOne
+  );
 
-router.get("/:activityId/statistics", activityController.getStatistics);
 export default router;

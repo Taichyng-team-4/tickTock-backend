@@ -18,11 +18,14 @@ import profileRouters from "../routes/profile.js";
 import authRouters from "../routes/auth.js";
 import oauthRouters from "../routes/oauth.js";
 import orgRouters from "../routes/orgs.js";
-import activityRouters from "../routes/activity.js";
 import newsRouters from "../routes/news.js";
 import orderRouters from "../routes/order.js";
 import ticketRouters from "../routes/ticket.js";
 import otherRouters from "../routes/other.js";
+import activityRouters from "../routes/activity.js";
+import venueRouters from "../routes/venue.js";
+import settingRouters from "../routes/activitySetting.js";
+
 import { errorHandler } from "../utils/error/errorHandler.js";
 import "./passportInit.js";
 
@@ -104,6 +107,8 @@ app.use("/api/v1/oauths", oauthRouters);
 app.use("/api/v1/orders", orderRouters);
 app.use("/api/v1/tickets", ticketRouters);
 app.use("/api/v1/activities", activityRouters);
+app.use("/api/v1/venues", venueRouters);
+app.use("/api/v1/settings", settingRouters);
 app.use("/api/v1", otherRouters);
 
 // Routes not found

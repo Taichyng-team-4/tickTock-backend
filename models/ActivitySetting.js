@@ -29,12 +29,21 @@ const activitySettingSchema = new mongoose.Schema(
     deletedAt: { type: Date, select: false },
     __v: { type: Number, select: false },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
+
+activitySettingSchema.pre(/^find/, function () {
+  if (!(this.$locals && this.$locals.getDeleted))
+    this.where({ deletedAt: null });
+});
 
 const ActivitySetting = mongoose.model(
   "ActivitySetting",
   activitySettingSchema
 );
 
-module.exports = ActivitySetting;
+export default ActivitySetting;

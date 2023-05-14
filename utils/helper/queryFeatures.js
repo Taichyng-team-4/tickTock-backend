@@ -4,7 +4,6 @@ class queryFeatures {
   constructor(query, demand = {}) {
     this.query = query;
     this.demand = demand;
-
   }
 
   filter() {
@@ -28,16 +27,16 @@ class queryFeatures {
   }
 
   select() {
+    let fields = [];
     if (this.demand.fields) {
-      const fields = this.demand.fields.split(",");
+      fields = this.demand.fields.split(",");
       if (!fields.includes("__v")) fields.push("-__v");
       if (!fields.includes("createdAt")) fields.push("-createdAt");
       if (!fields.includes("updatedAt")) fields.push("-updatedAt");
+    } else fields = ["-createdAt", "-updatedAt", "-__v"];
 
-      this.query = this.query.select(fields.join(" "));
-    } else {
-      this.query = this.query.select("-createdAt -updatedAt -__v");
-    }
+    this.query = this.query.select(fields.join(" "));
+
     return this;
   }
 
@@ -67,8 +66,11 @@ class queryFeatures {
     return this;
   }
 
-  populate(populate) {
-    this.query.populate(populate);
+  populate() {
+    if (!this.demand.pop) return this;
+
+    const popBy = this.demand.pop.split(",").join(" ");
+    this.query.populate(popBy, "-createdAt -updatedAt");
     return this;
   }
 }

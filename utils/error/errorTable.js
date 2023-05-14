@@ -1,11 +1,23 @@
 import AppError from "./appError.js";
 
+export const duplicatedInputFieldsError = (array) =>
+  new AppError(`${array.join(",")} are duplicated`, 400, "C10010002");
+
+export const noPermissionError = () =>
+  new AppError("Permission deny", 403, "B10010001");
+
+export const targetNotProvideError = (target) =>
+  new AppError(`Please provide ${target}`, 400, "C10010001");
+
 export const notAllowUpdateError = (notAllowFields) =>
   new AppError(
     `Not allow to update ${notAllowFields.join(", ")}`,
     400,
     "C10020001"
   );
+
+export const targetNotFoundError = (target) =>
+  new AppError(`${target} not found`, 404, "C10010001");
 
 export const idNotFoundError = () =>
   new AppError("No data found with that ID.", 404, "C10010001");

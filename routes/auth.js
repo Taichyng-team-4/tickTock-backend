@@ -1,7 +1,7 @@
 import express from "express";
 import { check } from "express-validator";
 import * as authController from "../controllers/authControllers.js";
-import * as shareController from "../controllers/shareControllers.js";
+import * as shareControllers from "../controllers/shareControllers.js";
 
 const router = express.Router();
 router.post(
@@ -16,7 +16,7 @@ router.post(
     check("password").isLength({ min: 6 }),
     check("passwordConfirm").isLength({ min: 6 }),
   ],
-  shareController.validation,
+  shareControllers.validation,
   authController.signup
 );
 router.post(
@@ -25,14 +25,14 @@ router.post(
     check("email").normalizeEmail().isEmail(),
     check("password").isLength({ min: 6 }),
   ],
-  shareController.validation,
+  shareControllers.validation,
   authController.login
 );
 router.get("/verify_email", authController.verify_email);
 router.post(
   "/password/forgot",
   [check("email").normalizeEmail().isEmail()],
-  shareController.validation,
+  shareControllers.validation,
   authController.forgotPassword
 );
 router.patch(
@@ -42,7 +42,7 @@ router.patch(
     check("password").isLength({ min: 6 }),
     check("passwordConfirm").isLength({ min: 6 }),
   ],
-  shareController.validation,
+  shareControllers.validation,
   authController.authToken,
   authController.updatePassword
 );

@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import User from "../models/user.js";
 import Email from "../utils/email.js";
-import * as helper from "../utils/helper/helper.js"
+import * as helper from "../utils/helper/helper.js";
 import passwordGenerator from "generate-password";
 import catchAsync from "../utils/error/catchAsync.js";
 import * as authHelper from "../utils/helper/auth.js";
@@ -45,7 +45,7 @@ export const signup = catchAsync(async (req, res, next) => {
     "passwordConfirm",
   ];
 
-  req.body.birth = authHelper.toUTC(req.body.birth)
+  req.body.birth = helper.toUTC(req.body.birth);
   const santalizeResponse = authHelper.santalize(req.body, requireFields);
 
   // 2) Create email verification secret and token

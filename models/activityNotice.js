@@ -36,6 +36,7 @@ const activityNoticeSchema = new mongoose.Schema(
 activityNoticeSchema
   .virtual("isPublished")
   .get(() => this.publishAt < Date.now());
+  
 activityNoticeSchema
   .virtual("isExpired")
   .get(() => this.expiredAt > Date.now());

@@ -6,7 +6,7 @@ const orgSchema = new mongoose.Schema(
     ownerId: {
       type: mongoose.Types.ObjectId,
       ref: "User",
-      required: [true, "An organization should has an owner"],
+      required: [true, "An organization should has an ownerId"],
     },
     name: {
       type: String,

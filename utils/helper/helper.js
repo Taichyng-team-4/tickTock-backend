@@ -36,3 +36,21 @@ export const replaceMongooseOpt = (obj, validOperators) => {
   });
   return newObj;
 };
+
+export const toUTC = (date) => date.split("/").join("-");
+
+export const removeId = (e) => {
+  if (e.endsWith("Id")) return e.slice(0, -2);
+  if (e.endsWith("ID")) return e.slice(0, -2);
+  return e;
+};
+
+export const removeFieldsId = (obj, fields) =>
+  Object.keys(obj).reduce((acc, key) => {
+    if (fields.includes(key)) {
+      acc[removeId(key)] = obj[key];
+    } else {
+      acc[key] = obj[key];
+    }
+    return acc;
+  }, {});
