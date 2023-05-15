@@ -1,78 +1,164 @@
-import catchAsync from "../utils/catchAsync.js";
+import mongoose from "mongoose";
+import catchAsync from "../utils/error/catchAsync.js";
+import Org from "../models/org.js";
+import Venue from "../models/venue.js";
+import Activity from "../models/activity.js";
+import ActivitySetting from "../models/activitySetting.js";
+import * as helper from "../utils/helper/helper.js";
+import * as errorTable from "../utils/error/errorTable.js";
+import queryFeatures from "../utils/helper/queryFeatures.js";
 
-export const getAll = catchAsync((req, res, next) => {
+export const createOne = catchAsync(async (req, res, next) => {
+  let venue, setting, activity;
+
+  // 1) Conver datetime
+  req.body.startAt = helper.toUTC(req.body.startAt);
+  req.body.endAt = helper.toUTC(req.body.endAt);
+
+  // 2) Check Venue
+  if (!req.body.venue && !req.body.venueId)
+    throw errorTable.targetNotProvideError("Venue");
+
+  if (req.body.venueId) {
+    venue = await Venue.findById(req.body.venueId);
+    if (!venue) throw errorTable.targetNotFoundError("Venue");
+  }
+
+  // 3) Check Org
+  const org = await Org.findById(req.body.orgId);
+  if (!org) throw errorTable.targetNotFoundError("Orgnaization");
+  if (org.ownerId.toString() !== req.user.id)
+    throw errorTable.noPermissionError();
+
+  // 4) Create Activity and its setting
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  if (req.body.venue) {
+    venue = await Venue.create([req.body.venue], {
+      session: session,
+    });
+    req.body.venueId = venue[0]._id;
+  }
+
+  setting = await ActivitySetting.create([req.body.setting], {
+    session: session,
+  });
+  req.body.settingId = setting[0]._id;
+
+  activity = (await Activity.create([req.body], { session: session }))[0];
+
+  await session.commitTransaction();
+  session.endSession();
+
   res.status(200).json({
-    code: "200",
     status: "success",
-    message: "Get news successfully",
-    data: [
-      {
-        activityId: "uuid-4445-7745", //活動id
-        activityName: "2023年春季文藝晚會", //活動標題
-        activityStartTime: "2023-05-15 19:00:00", //活動開始時間
-        activityEndTime: "2023/06/03 19:00:00", //活動結束時間
-        activityMaxCapacity: 200, //活動上限人數
-        activityNumberOfApplicants: 200, //報名人數
-        activityTicketStatus: 0, //購票狀態:0:未發布 1:發佈
-        orgId: "uuid-12345-23456-111", //組織id
-        activityStatus: 0, //活動是否已結束:0:未結束 1:已結束
-      },
-      {
-        activityId: "uuid-4445-7746", //活動id
-        activityName: "2023年XX晚會", //活動標題
-        activityStartTime: "2023-05-15 19:00:00", //活動開始時間
-        activityEndTime: "2023/06/03 19:00:00", //活動結束時間
-        activityMaxCapacity: 200, //活動上限人數
-        activityNumberOfApplicants: 200, //報名人數
-        activityTicketStatus: 0, //購票狀態:0:未發布 1:發佈
-        orgId: "uuid-12345-23456-112", //組織id
-        activityStatus: 0, //活動是否已結束:0:未結束 1:已結束
-      },
-    ],
+    data: helper.sanitizeCreatedDoc(activity),
   });
 });
 
-export const getOne = catchAsync((req, res, next) => {
+export const updateOne = catchAsync(async (req, res, next) => {
+  let venue, setting, features, data;
+
+  // 1) Conver datetime
+  if (req.body.startAt) req.body.startAt = helper.toUTC(req.body.startAt);
+  if (req.body.endAt) req.body.endAt = helper.toUTC(req.body.endAt);
+
+  // 2) Sanitize req body
+  delete req.body.settingId;
+
+  // 3) Check Venue
+  if (req.body.venue && req.body.venueId)
+    throw errorTable.duplicatedInputFieldsError(["venue", "venueId"]);
+
+  if (req.body.venueId) {
+    venue = await Venue.findById(req.body.venueId);
+    if (!venue) throw errorTable.targetNotFoundError("Venue");
+  }
+
+  // 4) Check Org
+  if (req.body.orgId) {
+    const org = await Org.findById(req.body.orgId);
+    if (!org) throw errorTable.targetNotFoundError("Orgnaization");
+
+    if (org.ownerId.toString() !== req.user.id)
+      throw errorTable.noPermissionError();
+  }
+
+  // 5) Update Activity
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  setting = await ActivitySetting.create([req.body.setting], {
+    session: session,
+  });
+
+  if (req.body.venue) {
+    venue = await Venue.create([req.body.venue], {
+      session: session,
+    });
+    req.body.venueId = venue[0]._id;
+  }
+
+  await ActivitySetting.findByIdAndUpdate(req.settingId, req.body.setting, {
+    new: true,
+    runValidators: true,
+    session: session,
+  });
+
+  const activityQuery = Activity.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+    session: session,
+  });
+  features = new queryFeatures(activityQuery, req.query).select();
+  data = await features.query;
+  if (!data) throw errorTable.idNotFoundError();
+
+  await session.commitTransaction();
+  session.endSession();
+
   res.status(200).json({
-    code: "200",
     status: "success",
-    message: "Get news successfully",
-    data: {
-      activityId: "uuid-4445-7745", //活動id
-      activityName: "2023年春季文藝晚會", //活動標題
-      activityStartTime: "2023-05-15 19:00:00", //活動開始時間
-      activityEndTime: "2023/06/03 19:00:00", //活動結束時間
-      activityMaxCapacity: 200, //活動上限人數
-      activityNumberOfApplicants: 200, //報名人數
-      activityTicketStatus: 0, //購票狀態:0:未發布 1:發佈
-      orgId: "uuid-12345-23456-111", //組織id
-      activityStatus: 0, //活動是否已結束:0:未結束 1:已結束
-    },
+    data: helper.removeDocObjId(data),
   });
 });
 
-export const createOne = catchAsync((req, res, next) => {
-  res.status(201).json({
-    code: "201",
-    status: "success",
-    message: "Added information successfully",
-  });
+export const deleteOne = catchAsync(async (req, res, next) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  await Activity.findByIdAndUpdate(
+    req.params.id,
+    { deletedAt: Date.now() },
+    { session: session }
+  );
+  await ActivitySetting.findByIdAndUpdate(
+    req.settingId,
+    { deletedAt: Date.now() },
+    { session: session }
+  );
+  await session.commitTransaction();
+  session.endSession();
+
+  res.status(204).json({});
 });
 
-export const updateOne = catchAsync((req, res, next) => {
-  res.status(200).json({
-    code: "201",
-    status: "success",
-    message: "Updating information successfully",
-  });
-});
+export const checkOwner = catchAsync(async (req, res, next) => {
+  // 1) Find activity
+  const activity = await Activity.findById(req.params.id);
+  if (!activity) res.status(204).json({});
 
-export const deleteOne = catchAsync((req, res, next) => {
-  res.status(201).json({
-    code: "201",
-    status: "success",
-    message: "Data deleted successfully",
-  });
+  // 2) Find org
+  const orgId = activity.orgId.toString();
+  const org = await Org.findById(orgId);
+
+  // 3) Check permission
+  const ownerId = org.ownerId.toString();
+  if (ownerId !== req.user.id) throw errorTable.noPermissionError();
+
+  req.activityId = activity.id;
+  req.settingId = activity.settingId.toString();
+  next();
 });
 
 export const getStatistics = catchAsync((req, res, next) => {

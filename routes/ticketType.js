@@ -1,17 +1,17 @@
 import express from "express";
 
-import * as ticketTypeControllers from "../controllers/ticketTypeControllers.js";
+import * as ticketTypeController from "../controllers/ticketTypeControllers.js";
 
 const router = express.Router();
 
 router
   .route("/")
-  .get(ticketTypeControllers.getAll)
-  .post(ticketTypeControllers.createOne);
+  .get(ticketTypeController.getAll)
+  .post(ticketTypeController.createOne);
 router
   .route("/:ticketTypeId")
-  .get(ticketTypeControllers.getOne)
-  .put(ticketTypeControllers.updateOne)
-  .delete(ticketTypeControllers.deleteOne);
+  .get(ticketTypeController.getOne)
+  .put(ticketTypeController.updateOne)
+  .delete(ticketTypeController.deleteOne);
 
 export default router;

@@ -1,14 +1,14 @@
 import express from "express";
-
-import * as userControllers from "../controllers/userControllers.js";
+import User from "../models/user.js";
+import * as factory from "../controllers/factory.js";
 
 const router = express.Router();
 
-router.post("/signup", userControllers.signup);
-router.get("/verify_email", userControllers.verify_email);
-router.post("/login", userControllers.login);
-router.patch("/profile", userControllers.profile);
-router.post("/password/forgot", userControllers.forgotPassword);
-router.patch("/password/update", userControllers.updatePassword);
+router.route("/").get(factory.getAll(User)).post(factory.createOne(User));
+router
+  .route("/:id")
+  .get(factory.getOne(User))
+  .patch(factory.updateOne(User))
+  .delete(factory.deleteOne(User));
 
 export default router;

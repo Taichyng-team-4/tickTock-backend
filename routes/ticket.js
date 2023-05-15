@@ -1,17 +1,17 @@
 import express from "express";
 
-import * as ticketControllers from "../controllers/ticketControllers.js";
+import * as ticketController from "../controllers/ticketControllers.js";
 
 const router = express.Router();
 
 router
   .route("/")
-  .get(ticketControllers.getAll)
-  .post(ticketControllers.createOne);
+  .get(ticketController.getAll)
+  .post(ticketController.createOne);
 router
   .route("/:ticketId")
-  .get(ticketControllers.getOne)
-  .patch(ticketControllers.updateOne)
-  .delete(ticketControllers.deleteOne);
+  .get(ticketController.getOne)
+  .patch(ticketController.updateOne)
+  .delete(ticketController.deleteOne);
 
 export default router;

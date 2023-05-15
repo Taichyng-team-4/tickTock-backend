@@ -5,7 +5,8 @@ process.on("uncaughtException", (err) => {
 });
 
 import * as dotenv from "dotenv";
-dotenv.config();
+dotenv.config();    
+import "./config/dbInit.js";
 import app from "./config/app.js";
 
 //Server listen port
@@ -17,5 +18,5 @@ app.listen(port, () =>
 process.on("unhandledRejection", (err) => {
   console.log("Unhandled rejection happen!");
   console.log(err);
-  server.close(() => process.exit(1));
+  process.exit(1);
 });

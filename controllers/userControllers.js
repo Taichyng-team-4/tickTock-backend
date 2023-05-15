@@ -1,50 +1,18 @@
-import catchAsync from "../utils/catchAsync.js";
+import * as userHelper from "../utils/helper/user.js";
+import catchAsync from "../utils/error/catchAsync.js";
 
-export const signup = catchAsync((req, res, next) => {
-  res.status(201).json({
-    status: "success",
-    code: "201",
-    message: "Sign up account successfully",
-  });
+export const getMe = catchAsync(async (req, res, next) => {
+  req.params.id = req.user._id;
+  next();
 });
 
-export const verify_email = catchAsync((req, res, next) => {
-  res.status(200).json({
-    status: "success",
-    code: "200",
-    message: "Validate email successfully!",
-  });
+export const getProfile = catchAsync(async (req, res, next) => {
+  req.query.fields = "+email,+name,+gender,+phone,+birth,+avatar";
+  next();
 });
 
-export const login = catchAsync((req, res, next) => {
-  res.status(200).json({
-    status: "success",
-    code: "200",
-    message: "Login account successfully",
-    token: "yourToken",
-  });
-});
-
-export const profile = catchAsync((req, res, next) => {
-  res.status(200).json({
-    status: "success",
-    code: "200",
-    message: "Update account successfully",
-  });
-});
-
-export const forgotPassword = catchAsync((req, res, next) => {
-  res.status(200).json({
-    status: "success",
-    code: "200",
-    message: "New passowrd has sent to your email",
-  });
-});
-
-export const updatePassword = catchAsync((req, res, next) => {
-  res.status(200).json({
-    status: "success",
-    code: "200",
-    message: "Update password successfully",
-  });
+export const checkUpdatedProfile = catchAsync(async (req, res, next) => {
+  const notAllowFields = ["email", "password", "confirmPassword"];
+  userHelper.checkUpdateFields(req.body, notAllowFields);
+  next();
 });
