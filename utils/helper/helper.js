@@ -24,7 +24,8 @@ export const removeObjKeys = (obj, keysToRemove) =>
 export const replaceMongooseOpt = (obj, validOperators) => {
   const newObj = {};
   Object.entries(obj).forEach(([key, value]) => {
-    if (value && typeof value === "object") {
+    if (!value) return;
+    if (typeof value === "object") {
       const newValue = {};
       Object.keys(value).forEach((operator) => {
         if (validOperators.includes(operator)) {
@@ -32,7 +33,7 @@ export const replaceMongooseOpt = (obj, validOperators) => {
         }
       });
       if (Object.keys(newValue).length) newObj[key] = newValue;
-    }
+    } else if (typeof value === "string") newObj[key] = value;
   });
   return newObj;
 };
