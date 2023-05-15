@@ -3,11 +3,6 @@ import validator from "validator";
 
 const activitySchema = new mongoose.Schema(
   {
-    ownerId: {
-      type: mongoose.Types.ObjectId,
-      ref: "User",
-      required: [true, "An activity should has an owner"],
-    },
     orgId: {
       type: mongoose.Types.ObjectId,
       ref: "Org",
@@ -18,15 +13,19 @@ const activitySchema = new mongoose.Schema(
       ref: "Venue",
       required: [true, "An activity should has a venue"],
     },
-    categoryId: {
-      type: mongoose.Types.ObjectId,
-      ref: "ActivityCategory",
-      required: [true, "An activity should has a category"],
-    },
     settingId: {
       type: mongoose.Types.ObjectId,
       ref: "ActivitySetting",
       required: [true, "An activity should has its setting"],
+    },
+    category: {
+      type: String,
+      enum: {
+        values: ["music", "sport", "drama", "art", "sport", "exhibition"],
+        message:
+          "An activity category should be music, sport, drama, art, sport or exhibition",
+      },
+      default: "anonymous",
     },
     name: {
       type: String,
@@ -36,7 +35,6 @@ const activitySchema = new mongoose.Schema(
         250,
         "An activity name should not longer than 250 characters",
       ],
-      unique: true,
     },
     themeImg: {
       type: String,
@@ -69,17 +67,17 @@ const activitySchema = new mongoose.Schema(
         function (val) {
           return val > Date.now();
         },
-        "Pleas provide a valid start date",
+        "Start date should be in the future",
       ],
     },
     endAt: {
       type: Date,
-      required: [true, "An activity should has a end date"],
+      required: [true, "An activity should has an end date"],
       validate: [
         function (val) {
           return val > Date.now();
         },
-        "Pleas provide a valid end date",
+        "End date should be in the future",
       ],
     },
     deletedAt: { type: Date, select: false },
@@ -92,14 +90,26 @@ const activitySchema = new mongoose.Schema(
   }
 );
 
-activitySchema.virtual("isPublished").get(() => {
+activitySchema.index({ name: 1, deletedAt: 1 }, { unique: true });
+
+activitySchema.pre(/^find/, function () {
+  if (!(this.$locals && this.$locals.getDeleted))
+    this.where({ deletedAt: null });
+});
+
+activitySchema.virtual("isPublished").get(function () {
   if (!this.publishAt) return false;
   return this.publishAt < Date.now();
 });
 
-activitySchema.virtual("isStart").get(() => this.startAt > Date.now());
-activitySchema.virtual("isEnd").get(() => this.endAt > Date.now());
+activitySchema.virtual("isStart").get(function () {
+  return this.startAt < Date.now();
+});
 
-const Activity = mongoose.model("activitySchema", activitySchema);
+activitySchema.virtual("isEnd").get(function () {
+  return this.endAt < Date.now();
+});
 
-module.exports = Activity;
+const Activity = mongoose.model("Activity", activitySchema);
+
+export default Activity;

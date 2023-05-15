@@ -5,7 +5,7 @@ const orderSchema = new mongoose.Schema(
     ownerId: {
       type: mongoose.Types.ObjectId,
       ref: "User",
-      required: [true, "An order should has an ownerId"],
+      required: [true, "An order should has an owner"],
     },
     activityId: {
       type: mongoose.Types.ObjectId,

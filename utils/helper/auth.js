@@ -2,8 +2,6 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import * as errorTable from "../error/errorTable.js";
 
-export const toUTC = (date) => date.split("/").join("-");
-
 export const santalize = (obj, fields) => {
   let newObj = {};
   if (!obj) throw errorTable.undefinedError();

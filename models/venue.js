@@ -8,7 +8,6 @@ const venueSchema = new mongoose.Schema(
       required: [true, "A venue should has a name"],
       minLength: [1, "An venue name should longer than 1 characters"],
       maxLength: [250, "An venue name should not longer than 250 characters"],
-      unique: true,
     },
     capacity: {
       type: Number,
@@ -20,20 +19,25 @@ const venueSchema = new mongoose.Schema(
     },
     venueImg: {
       type: String,
-      default: "",
       validate: [validator.isURL, "The venue image should be an url"],
     },
     seatMapImg: {
       type: String,
-      default: "",
       validate: [validator.isURL, "The venue seat map should be an url"],
     },
     deletedAt: { type: Date, select: false },
     __v: { type: Number, select: false}
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+venueSchema.index({ name: 1, deletedAt: 1 }, { unique: true });
+
+venueSchema.pre(/^find/, function () {
+  if (!(this.$locals && this.$locals.getDeleted))
+    this.where({ deletedAt: null });
+});
 
 const Venue = mongoose.model("Venue", venueSchema);
 
-module.exports = Venue;
+export default  Venue;

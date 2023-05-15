@@ -9,7 +9,6 @@ const userSchema = new mongoose.Schema(
       required: [true, "A user should provide an email"],
       validate: [validator.isEmail, "Please fill a valid email address"],
       select: false,
-      unique: true,
     },
     password: {
       type: String,
@@ -66,23 +65,28 @@ const userSchema = new mongoose.Schema(
     googleId: {
       type: String,
       select: false,
-      unique: true,
-      sparse: true,
     },
     emailVerifyToken: { type: String, select: false },
     emailValidatedAt: { type: Date, default: undefined, select: false },
     isEmailValidated: { type: Boolean, default: false, select: false },
     passwordUpdatedAt: { type: Date, default: undefined, select: false },
-    deletedAt: { type: Date, default: undefined },
+    deletedAt: { type: Date, select: false },
     __v: { type: Number, select: false },
   },
   {
-    id: false,
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
 );
+
+userSchema.index({ email: 1, deletedAt: 1 }, { unique: true });
+userSchema.index({ googleId: 1, deletedAt: 1 }, { unique: true, sparse: true });
+
+userSchema.pre(/^find/, function () {
+  if (!(this.$locals && this.$locals.getDeleted))
+    this.where({ deletedAt: null });
+});
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
