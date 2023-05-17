@@ -25,15 +25,10 @@ const ticketTypeSchema = new mongoose.Schema(
         "The zone of ticketType should only contain alphabet or number.",
       ],
     },
-    currency: {
-      type: String,
-      require: [true, "A ticket should has a currency when purchase"],
-      validate: [validator.isAlpha, "Currency should only contain alphabet"],
-    },
     price: {
-      type: Boolean,
+      type: Number,
       require: [true, "A ticket should has a price when purchase"],
-      validate: [validator.isNumeric, "Price should only contain number"],
+      validate: [value => validator.isNumeric(value.toString()), "Price should only contain number"],
     },
     total: {
       type: Number,
@@ -43,16 +38,25 @@ const ticketTypeSchema = new mongoose.Schema(
         "A ticket type should provide the total number of tickets",
       ],
     },
-    remain: {
-      type: Number,
-      minLength: [0, "The reamin ticke should greater than 0"],
+    startAt: {
+      type: Date,
+      required: [true, "An activity should has a start date"],
       validate: [
         function (val) {
-          return val <= this.total;
+          return val > Date.now();
         },
-        "The remain ticket should not greater than the total ticket number",
+        "Start date should be in the future",
       ],
-      default: () => this.total,
+    },
+    endAt: {
+      type: Date,
+      required: [true, "An activity should has an end date"],
+      validate: [
+        function (val) {
+          return val > Date.now();
+        },
+        "End date should be in the future",
+      ],
     },
     deletedAt: { type: Date, select: false },
     __v: { type: Number, select: false },
@@ -66,4 +70,5 @@ const ticketTypeSchema = new mongoose.Schema(
 
 const TicketType = mongoose.model("TicketType", ticketTypeSchema);
 
-module.exports = TicketType;
+export default TicketType;
+

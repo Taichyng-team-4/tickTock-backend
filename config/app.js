@@ -25,6 +25,7 @@ import otherRouters from "../routes/other.js";
 import activityRouters from "../routes/activity.js";
 import venueRouters from "../routes/venue.js";
 import settingRouters from "../routes/activitySetting.js";
+import ticketTypeRouters from "../routes/ticketType.js"
 
 import { errorHandler } from "../utils/error/errorHandler.js";
 import "./passportInit.js";
@@ -109,6 +110,7 @@ app.use("/api/v1/tickets", ticketRouters);
 app.use("/api/v1/activities", activityRouters);
 app.use("/api/v1/venues", venueRouters);
 app.use("/api/v1/settings", settingRouters);
+app.use("/api/v1/ticketTypes",ticketTypeRouters);
 app.use("/api/v1", otherRouters);
 
 // Routes not found

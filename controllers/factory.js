@@ -23,7 +23,7 @@ export const getOne = (Model) =>
 export const getAll = (Model) =>
   catchAsync(async (req, res, next) => {
     const features = new queryFeatures(Model.find({}), req.query)
-      .filter()
+     // .filter()
       .select()
       .sort()
       .paginate()
