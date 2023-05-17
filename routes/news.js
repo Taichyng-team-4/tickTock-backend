@@ -1,18 +1,16 @@
 import express from "express";
-
-import * as newsController from "../controllers/newsControllers.js";
+import ActivityNotice from "../models/activityNotice.js";
+import * as factory from "../controllers/factory.js";
 
 const router = express.Router();
 
-router
-  .route("/")
-  .get(newsController.getAll)
-  .post(newsController.createOne);
-  
+router.route("/")
+      .get(factory.getAll(ActivityNotice))
+      .post(factory.createOne(ActivityNotice));
 router
   .route("/:newsId")
-  .get(newsController.getOne)
-  .patch(newsController.updateOne)
-  .delete(newsController.deleteOne);
+  .get(factory.getOne(ActivityNotice))
+  .patch(factory.updateOne(ActivityNotice))
+  .delete(factory.deleteOne(ActivityNotice));
 
 export default router;
