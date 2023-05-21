@@ -32,4 +32,4 @@ systemNoticeSchema.virtual("isExpired").get(() => this.expiredAt > Date.now());
 
 const SystemNotice = mongoose.model("SystemNotice", systemNoticeSchema);
 
-module.exports = SystemNotice;
+export default SystemNotice;

@@ -18,7 +18,7 @@ import profileRouters from "../routes/profile.js";
 import authRouters from "../routes/auth.js";
 import oauthRouters from "../routes/oauth.js";
 import orgRouters from "../routes/orgs.js";
-import newsRouters from "../routes/news.js";
+import newsRouters from "../routes/notice.js";
 import orderRouters from "../routes/order.js";
 import ticketRouters from "../routes/ticket.js";
 import otherRouters from "../routes/other.js";

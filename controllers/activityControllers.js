@@ -112,6 +112,7 @@ export const updateOne = catchAsync(async (req, res, next) => {
     session: session,
   });
   features = new queryFeatures(activityQuery, req.query).select();
+  console.log(features)
   data = await features.query;
   if (!data) throw errorTable.idNotFoundError();
 

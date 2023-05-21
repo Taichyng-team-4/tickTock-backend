@@ -2,6 +2,7 @@ import * as userHelper from "../utils/helper/user.js";
 import catchAsync from "../utils/error/catchAsync.js";
 
 export const getMe = catchAsync(async (req, res, next) => {
+  console.log(req.params.id, req.user._id)
   req.params.id = req.user._id;
   next();
 });
