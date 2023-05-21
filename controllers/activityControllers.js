@@ -4,12 +4,13 @@ import Org from "../models/org.js";
 import Venue from "../models/venue.js";
 import Activity from "../models/activity.js";
 import ActivitySetting from "../models/activitySetting.js";
+import TicketType from "../models/ticketType.js";
 import * as helper from "../utils/helper/helper.js";
 import * as errorTable from "../utils/error/errorTable.js";
 import queryFeatures from "../utils/helper/queryFeatures.js";
 
 export const createOne = catchAsync(async (req, res, next) => {
-  let venue, setting, activity;
+  let venue, setting, activity,ticketTypes;
 
   // 1) Conver datetime
   req.body.startAt = helper.toUTC(req.body.startAt);
@@ -45,6 +46,10 @@ export const createOne = catchAsync(async (req, res, next) => {
     session: session,
   });
   req.body.settingId = setting[0]._id;
+  
+  // ticketTypes = await TicketType.create([req.body.ticketTypes], {
+  //   session: session,
+  // });
 
   activity = (await Activity.create([req.body], { session: session }))[0];
 

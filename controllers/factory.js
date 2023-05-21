@@ -30,7 +30,7 @@ export const getAll = (Model) =>
       .populate()
       .includeDeleted();
     let data = await features.query;
-    console.log(features.query.getQuery());
+   // console.log(features.query.getQuery());
     data = helper.removeDocsObjId(data);
     if (req.query.pop)
       data = data.map((el) =>
