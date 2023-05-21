@@ -21,9 +21,16 @@ const partnerSchema = new mongoose.Schema(
     deletedAt: { type: Date, select: false },
     __v: { type: Number, select: false },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+partnerSchema.index({ name: 1, deletedAt: 1 }, { unique: true });
+
+partnerSchema.pre(/^find/, function () {
+  if (!(this.$locals && this.$locals.getDeleted))
+    this.where({ deletedAt: null });
+});
 
 const Partner = mongoose.model("Partner", partnerSchema);
 
-module.exports = Partner;
+export default Partner;
