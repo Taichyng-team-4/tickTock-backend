@@ -109,3 +109,10 @@ export const validateErrorHandler = (err) => {
 
   return new AppError(`Invalid input. ${errors.join(". ")}`, 400, "C10020001");
 };
+
+export const updateImgFailError = (err) =>
+  new AppError(
+    `Update img fail`,
+    500,
+    "F10010001"
+  );
