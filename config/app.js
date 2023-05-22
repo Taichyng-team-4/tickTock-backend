@@ -18,7 +18,8 @@ import profileRouters from "../routes/profile.js";
 import authRouters from "../routes/auth.js";
 import oauthRouters from "../routes/oauth.js";
 import orgRouters from "../routes/orgs.js";
-import newsRouters from "../routes/notice.js";
+import activityNoticeRouters from "../routes/activityNotice.js";
+import systemNoticeRouters from "../routes/systemNotice.js";
 import orderRouters from "../routes/order.js";
 import ticketRouters from "../routes/ticket.js";
 import otherRouters from "../routes/other.js";
@@ -101,7 +102,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Routes
 app.use("/api/v1/orgs", orgRouters);
-app.use("/api/v1/news", newsRouters);
+app.use("/api/v1/activityNotice", activityNoticeRouters);
+app.use("/api/v1/systemNotice", systemNoticeRouters);
 app.use("/api/v1/users", userRouters);
 app.use("/api/v1/profile", profileRouters);
 app.use("/api/v1/auths", authRouters);
