@@ -5,21 +5,17 @@ import queryFeatures from "../utils/helper/queryFeatures.js";
 
 export const getOne = (Model) =>
   catchAsync(async (req, res, next) => {
-    const features = new queryFeatures(Model.findOne({
-      _id: req.params.id,
-      deletedAt: { $exists: false } // 添加條件排除已刪除的資料
-    }), req.query)
+    const features = new queryFeatures(Model.findById(req.params.id), req.query)
       .select()
       .populate()
       .includeDeleted();
 
     let data = await features.query;
     if (!data) throw errorTable.idNotFoundError();
-    console.log(data)
     if (data.deletedAt) {
       throw new Error("Activity notice not found"); // 如果消息已被刪除，拋出錯誤
     }
-
+    
     data = helper.removeDocObjId(data);
     if (req.query.pop)
       data = helper.removeFieldsId(data, req.query.pop.split(","));
@@ -29,9 +25,7 @@ export const getOne = (Model) =>
 
 export const getAll = (Model) =>
   catchAsync(async (req, res, next) => {
-    const features = new queryFeatures(Model.find(
-      { deletedAt: { $exists: false } }), // 添加條件排除已刪除的資料
-      req.query)
+    const features = new queryFeatures(Model.find({}), req.query)
       .filter()
       .select()
       .sort()

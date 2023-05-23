@@ -24,7 +24,10 @@ const systemNoticeSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
+systemNoticeSchema.pre(/^find/, function () {
+  if (!(this.$locals && this.$locals.getDeleted))
+    this.where({ deletedAt: null });
+});
 systemNoticeSchema
   .virtual("isPublished")
   .get(() => this.publishAt < Date.now());

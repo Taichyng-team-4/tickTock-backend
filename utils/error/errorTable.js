@@ -116,3 +116,9 @@ export const updateImgFailError = (err) =>
     500,
     "F10010001"
   );
+
+
+export const targetNotFindError = (target) =>
+new AppError(`${target} does not exist.`, 400, "E10020001");
+export const noticeNotFindError = () =>
+new AppError(`You are not authorized to create this activity notice.`, 400, "E10020001");

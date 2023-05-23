@@ -14,7 +14,7 @@ export const updateOne = (Model) => catchAsync(async (req, res, next) => {
   const notice = await Model.findById(noticeId);
   // 如果活動消息不存在，拋出 ID 未找到的錯誤
   if (!notice) {
-    throw new Error("Activity notice not found");
+    throw errorTable.targetNotFindError("activity");
   }
 
   // 取得要更新的活動消息的 ID
@@ -23,7 +23,7 @@ export const updateOne = (Model) => catchAsync(async (req, res, next) => {
   const organization = await Org.findById(orgId);
   // 如果組織不存在或使用者不是該組織的擁有者，拋出錯誤
   if (!organization) {
-    throw new Error("You are not authorized to update this activity notice");
+    throw errorTable.noticeNotFindError();
   }
 
   // 更新活動消息
@@ -48,13 +48,13 @@ export const deleteOne = (Model) => catchAsync(async (req, res, next) => {
   const noticeId = req.params.newId;
   const notice = await Model.findById(noticeId);
   if (!notice) {
-    throw new Error("Activity notice not found");
+    throw errorTable.targetNotFindError("activity");
   }
 
   const orgId = req.body.orgId;
   const organization = await Org.findById(orgId);
   if (!organization) {
-    throw new Error("You are not authorized to update this activity notice");
+      throw errorTable.noticeNotFindError();
   }
 
   const session = await mongoose.startSession();

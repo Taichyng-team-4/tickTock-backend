@@ -33,6 +33,11 @@ const activityNoticeSchema = new mongoose.Schema(
   }
 );
 
+activityNoticeSchema.pre(/^find/, function () {
+  if (!(this.$locals && this.$locals.getDeleted))
+    this.where({ deletedAt: null });
+});
+
 activityNoticeSchema
   .virtual("isPublished")
   .get(function(){
