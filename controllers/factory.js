@@ -12,9 +12,7 @@ export const getOne = (Model) =>
 
     let data = await features.query;
     if (!data) throw errorTable.idNotFoundError();
-    if (data.deletedAt) {
-      throw new Error("Activity notice not found"); // 如果消息已被刪除，拋出錯誤
-    }
+
     
     data = helper.removeDocObjId(data);
     if (req.query.pop)
