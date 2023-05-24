@@ -14,20 +14,38 @@ router
   .post(
     authControllers.authToken,
     ticketTypeController.checkOwner,
-    ticketTypeController.createOne)
+    ticketTypeController.createAll)
+
+//使用票種id:單筆處理資料
 router
-  .route("/:id")
+  .route("/single/:id")
   .get(
-    ticketTypeController.getOne
+    factory.getOne(TicketType)
         )
   .patch(
     authControllers.authToken,
     ticketTypeController.checkOwner,
-    ticketTypeController.updateOne)
+    ticketTypeController.checkData,
+    factory.updateOne(TicketType))
   .delete(
     authControllers.authToken,
     ticketTypeController.checkOwner,
-    ticketTypeController.deleteOne
+    factory.deleteOne(TicketType)
    );
-
+  
+//使用活動id:多筆處理資料
+   router
+   .route("/many/:id")
+   .get(
+     ticketTypeController.getAllActivityTickets
+         )
+   .patch(
+     authControllers.authToken,
+     ticketTypeController.checkOwner,
+     ticketTypeController.updateAll)
+   .delete(
+     authControllers.authToken,
+     ticketTypeController.checkOwner,
+     ticketTypeController.deleteAll
+    );
 export default router;

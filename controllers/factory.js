@@ -5,7 +5,6 @@ import queryFeatures from "../utils/helper/queryFeatures.js";
 
 export const getOne = (Model) =>
   catchAsync(async (req, res, next) => {
-
     const features = new queryFeatures(Model.findById(req.params.id), req.query)
       .select()
       .populate()

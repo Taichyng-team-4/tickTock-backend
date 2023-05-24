@@ -37,7 +37,7 @@ export const getAll = catchAsync((req, res, next) => {
   });
 });
 
-export const getOne = catchAsync(async(req, res, next) => {
+export const getAllActivityTickets = catchAsync(async(req, res, next) => {
 
   const features = new queryFeatures(TicketType.find({activityId: req.params.id }), req.query)
   .select()
@@ -58,17 +58,17 @@ export const getOne = catchAsync(async(req, res, next) => {
   });
 });
 
-export const createOne = catchAsync(async (req, res, next) => {
+export const createAll = catchAsync(async (req, res, next) => {
   let ticketTypes, activityId;
-
   //檢查每筆資料的 activityId 
-  if (Array.isArray(req.body)) {
+  if (Array.isArray(req.body.tickTypes)) {
 
     //確認新增資料皆為相同活動
-    activityId = req.body[0].activityId; // 取得第一筆資料的 activityId
+    activityId = req.body.tickTypes[0].activityId; // 取得第一筆資料的 activityId
 
     // 檢查每筆資料的 activityId 是否都與第一筆相同
-    const isValidActivityId = req.body.every((data) => data.activityId === activityId);
+    const isValidActivityId = req.body.tickTypes.every((data) => data.activityId === activityId
+    );
 
     if (!isValidActivityId) {
       return res.status(400).json({ error: 'All activityIds must be the same' });
@@ -82,8 +82,7 @@ export const createOne = catchAsync(async (req, res, next) => {
   //3)創造ticketType
   const session = await mongoose.startSession();
   session.startTransaction();
-
-  ticketTypes = await TicketType.create(req.body, { session: session });
+  ticketTypes = await TicketType.create(req.body.tickTypes, { session: session });
 
   await session.commitTransaction();
   session.endSession();
@@ -96,18 +95,18 @@ export const createOne = catchAsync(async (req, res, next) => {
   });
 });
 
-export const updateOne = catchAsync(async (req, res, next) => {
+export const updateAll = catchAsync(async (req, res, next) => {
   let ticketTypes, activityId,features;
   const  updatas=[];
 
   //檢查每筆資料的 activityId 
-  if (Array.isArray(req.body)) {
+  if (Array.isArray(req.body.tickTypes)) {
 
     //確認新增資料皆為相同活動
-    activityId = req.body[0].activityId; // 取得第一筆資料的 activityId
+    activityId = req.body.tickTypes[0].activityId; // 取得第一筆資料的 activityId
 
     // 檢查每筆資料的 activityId 是否都與第一筆相同
-    const isValidActivityId = req.body.every((data) => data.activityId === activityId);
+    const isValidActivityId = req.body.tickTypes.every((data) => data.activityId === activityId);
 
     if (!isValidActivityId) {
       return res.status(400).json({ error: 'All activityIds must be the same' });
@@ -123,7 +122,7 @@ export const updateOne = catchAsync(async (req, res, next) => {
   session.startTransaction();
 
   //更新
-  await Promise.all(req.body.map(async (data) => {
+  await Promise.all(req.body.tickTypes.map(async (data) => {
     const filter = { activityId: data.activityId, _id: data.id };
     const update = { $set: data };
     const options = { new: true, runValidators: true, session: session };
@@ -145,17 +144,17 @@ export const updateOne = catchAsync(async (req, res, next) => {
   });
 });
 
-export const deleteOne = catchAsync(async (req, res, next) => {
-  let ticketTypes, activityId,features;
+export const deleteAll = catchAsync(async (req, res, next) => {
+  let  activityId;
 
   //檢查每筆資料的 activityId 
-  if (Array.isArray(req.body)) {
+  if (Array.isArray(req.body.tickTypes)) {
 
     //確認新增資料皆為相同活動
-    activityId = req.body[0].activityId; // 取得第一筆資料的 activityId
+    activityId = req.body.tickTypes[0].activityId; // 取得第一筆資料的 activityId
 
     // 檢查每筆資料的 activityId 是否都與第一筆相同
-    const isValidActivityId = req.body.every((data) => data.activityId === activityId);
+    const isValidActivityId = req.body.tickTypes.every((data) => data.activityId === activityId);
 
     if (!isValidActivityId) {
       return res.status(400).json({ error: 'All activityIds must be the same' });
@@ -170,10 +169,11 @@ export const deleteOne = catchAsync(async (req, res, next) => {
 const session = await mongoose.startSession();
   session.startTransaction();
 
-  await Promise.all(req.body.map(async (data) => {
+  await Promise.all(req.body.tickTypes.map(async (data) => {
     const update = { deletedAt: Date.now() };
     const options = {session: session };
-    const updatedDoc = await TicketType.findByIdAndUpdate(data.id, update, options);
+     await TicketType.findByIdAndUpdate(data.id, update, options);
+     
   }));
   await session.commitTransaction();
   session.endSession();
@@ -181,46 +181,45 @@ const session = await mongoose.startSession();
   res.status(204).json({});
 
 });
+
 export const checkOwner = catchAsync(async (req, res, next) => {
   let activityId;
+
   //確認資料為單筆或多筆
-  if (Array.isArray(req.body)) {// 多筆資料
+  if (Array.isArray(req.body.tickTypes)) {// 多筆資料
 
     //確認新增資料皆為相同活動
-    activityId = req.body[0].activityId; // 取得第一筆資料的 activityId
+    activityId = req.body.tickTypes[0].activityId; // 取得第一筆資料的 activityId
 
     // 檢查每筆資料的 activityId 是否都與第一筆相同
-    const isValidActivityId = req.body.every((data) => data.activityId === activityId);
+    const isValidActivityId = req.body.tickTypes.every((data) => data.activityId === activityId);
 
     if (!isValidActivityId) {
       return res.status(400).json({ error: 'All activityIds must be the same' });
     }
    } 
-
+   else{
+    activityId=req.body.activityId;
+   }
+   
   //Find orgid、ownerId
   const activity = await Activity.findById(activityId);
   const orgId = activity.orgId.toString();
   const result = await Org.findById(orgId);
 
   if (!result._id || !result.ownerId)
-    throw errorTable.targetNotProvideError("Org");
-
-  //Get token
-  let token;
-  if (authHelper.isTokenExist(req.headers.authorization))
-    token = req.headers.authorization.split(" ")[1]; //Authorization: 'Bearer TOKEN
-  if (!token) throw errorTable.AuthFailError();
-
-  //Verify token
-  const decodeToken = authHelper.decodeJWT(token);
-
-  //Check if User exist
-  const user = await User.findById(decodeToken.id);
-  if (!user) throw errorTable.AuthFailError();
+    throw errorTable.noPermissionError();
 
   //Check permission
   const ownerId = result.ownerId.toString();
-  if (ownerId.toString() !== user._id.toString()) throw errorTable.noPermissionError();
+  if (ownerId.toString() !== req.user._id.toString()) throw errorTable.noPermissionError();
+  next();
+});
+
+export const checkData = catchAsync(async (req, res, next) => {
+//Check activity
+  if (!req.body.activityId)
+  throw errorTable.targetNotProvideError("Activity");
 
   next();
 });
