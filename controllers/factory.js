@@ -5,6 +5,7 @@ import queryFeatures from "../utils/helper/queryFeatures.js";
 
 export const getOne = (Model) =>
   catchAsync(async (req, res, next) => {
+
     const features = new queryFeatures(Model.findById(req.params.id), req.query)
       .select()
       .populate()
@@ -23,15 +24,16 @@ export const getOne = (Model) =>
 export const getAll = (Model) =>
   catchAsync(async (req, res, next) => {
     const features = new queryFeatures(Model.find({}), req.query)
-     // .filter()
+      .filter()
       .select()
       .sort()
       .paginate()
       .populate()
       .includeDeleted();
-      
+
     let data = await features.query;
     data = helper.removeDocsObjId(data);
+
     if (req.query.pop)
       data = data.map((el) =>
         helper.removeFieldsId(el, req.query.pop.split(","))

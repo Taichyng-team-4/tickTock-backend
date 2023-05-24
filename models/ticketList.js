@@ -36,5 +36,4 @@ ticketListSchema.index({ ticketTypeId: 1, seatNo: 1 }, { unique: true });
 
 const TicketList = mongoose.model("TicketList", ticketListSchema);
 
-//module.exports = TicketList;
 export default TicketList;
