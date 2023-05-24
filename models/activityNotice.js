@@ -33,14 +33,24 @@ const activityNoticeSchema = new mongoose.Schema(
   }
 );
 
+activityNoticeSchema.pre(/^find/, function () {
+  if (!(this.$locals && this.$locals.getDeleted))
+    this.where({ deletedAt: null });
+});
+
 activityNoticeSchema
   .virtual("isPublished")
-  .get(() => this.publishAt < Date.now());
+  .get(function(){
+    return this.publishAt < Date.now()
+  });
+
   
 activityNoticeSchema
   .virtual("isExpired")
-  .get(() => this.expiredAt > Date.now());
+  .get(function(){
+    return this.expiredAt > Date.now()
+  });
 
 const ActivityNotice = mongoose.model("ActivityNotice", activityNoticeSchema);
 
-module.exports = ActivityNotice;
+export default ActivityNotice;
