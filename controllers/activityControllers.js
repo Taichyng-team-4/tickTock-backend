@@ -45,7 +45,7 @@ export const createOne = catchAsync(async (req, res, next) => {
     session: session,
   });
   req.body.settingId = setting[0]._id;
-
+  
   activity = (await Activity.create([req.body], { session: session }))[0];
 
   await session.commitTransaction();
