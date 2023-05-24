@@ -4,6 +4,7 @@ import queryFeatures from "../utils/helper/queryFeatures.js";
 import * as helper from "../utils/helper/helper.js";
 import Activity from "../models/activity.js";
 import Org from "../models/org.js";
+import * as errorTable from "../utils/error/errorTable.js";
 
 
 export const createOne = (Model) =>
@@ -27,7 +28,7 @@ export const createOne = (Model) =>
     const organization = await Org.findOne({ ownerId: userId, _id: activity.orgId });
     // 如果組織不存在或使用者不是該組織的擁有者，拋出錯誤
     if (!organization) {
-      throw errorTable.noticeNotFindError();
+      throw errorTable.noPermissionError();
     }
 
     // 建立包含 activityId 的新物件
@@ -51,14 +52,15 @@ export const updateOne = (Model) => catchAsync(async (req, res, next) => {
     throw errorTable.targetNotFindError("activity");
   }
 
-  // 取得要更新的活動消息的 ID
-  const orgId = req.body.orgId;
+  // 取得活動
+  const activity = await Activity.findById(notice.activityId)
+  // 取得使用者ID
   const userId = req.user.id;
   // 找到該活動所屬的組織
-  const organization = await Org.findOne({ ownerId: userId, _id: orgId });
+  const organization = await Org.findOne({ ownerId: userId, _id: activity.orgId });
   // 如果組織不存在或使用者不是該組織的擁有者，拋出錯誤
   if (!organization) {
-    throw errorTable.noticeNotFindError();
+    throw errorTable.noPermissionError();
   }
 
   // 更新活動消息
@@ -86,22 +88,20 @@ export const deleteOne = (Model) => catchAsync(async (req, res, next) => {
     throw errorTable.targetNotFindError("activity");
   }
 
-  const orgId = req.body.orgId;
+  // 取得活動
+  const activity = await Activity.findById(notice.activityId)
+  // 取得使用者ID
   const userId = req.user.id;
-  const organization = await Org.findOne({ ownerId: userId, _id: orgId });
+  // 找到該活動所屬的組織
+  const organization = await Org.findOne({ ownerId: userId, _id: activity.orgId });
   if (!organization) {
-    throw errorTable.noticeNotFindError();
+    throw errorTable.noPermissionError();
   }
 
-  const session = await mongoose.startSession();
-  session.startTransaction();
   await Model.findByIdAndUpdate(
     req.params.newId,
     { deletedAt: Date.now() },
-    { session: session }
   );
-  await session.commitTransaction();
-  session.endSession();
 
   res.status(204).json({});
 });
