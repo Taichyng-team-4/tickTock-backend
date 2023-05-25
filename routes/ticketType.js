@@ -14,7 +14,8 @@ router
   .post(
     authControllers.authToken,
     ticketTypeController.checkOwner,
-    ticketTypeController.createAll)
+    ticketTypeController.createAll
+    )
 
 //使用票種id:單筆處理資料
 router
@@ -25,7 +26,6 @@ router
   .patch(
     authControllers.authToken,
     ticketTypeController.checkOwner,
-    ticketTypeController.checkData,
     factory.updateOne(TicketType))
   .delete(
     authControllers.authToken,

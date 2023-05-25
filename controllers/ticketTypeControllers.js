@@ -6,8 +6,6 @@ import * as errorTable from "../utils/error/errorTable.js";
 import queryFeatures from "../utils/helper/queryFeatures.js";
 import Activity from "../models/activity.js";
 import Org from "../models/org.js";
-import * as authHelper from "../utils/helper/auth.js";
-import User from "../models/user.js";
 
 export const getAll = catchAsync((req, res, next) => {
   res.status(200).json({
@@ -37,12 +35,12 @@ export const getAll = catchAsync((req, res, next) => {
   });
 });
 
-export const getAllActivityTickets = catchAsync(async(req, res, next) => {
+export const getAllActivityTickets = catchAsync(async (req, res, next) => {
 
-  const features = new queryFeatures(TicketType.find({activityId: req.params.id }), req.query)
-  .select()
-  .populate()
-  .includeDeleted();
+  const features = new queryFeatures(TicketType.find({ activityId: req.params.id }), req.query)
+    .select()
+    .populate()
+    .includeDeleted();
   let data = await features.query;
   data = helper.removeDocsObjId(data);
 
@@ -59,27 +57,24 @@ export const getAllActivityTickets = catchAsync(async(req, res, next) => {
 });
 
 export const createAll = catchAsync(async (req, res, next) => {
-  let ticketTypes, activityId;
-  //檢查每筆資料的 activityId 
-  if (Array.isArray(req.body.tickTypes)) {
+  let ticketTypes;
+  // //檢查每筆資料的 activityId 
+  // if (Array.isArray(req.body.tickTypes)) {
 
-    //確認新增資料皆為相同活動
-    activityId = req.body.tickTypes[0].activityId; // 取得第一筆資料的 activityId
+  //   //確認新增資料皆為相同活動
+  //   activityId = req.body.tickTypes[0].activityId; // 取得第一筆資料的 activityId
 
-    // 檢查每筆資料的 activityId 是否都與第一筆相同
-    const isValidActivityId = req.body.tickTypes.every((data) => data.activityId === activityId
-    );
+  //   // 檢查每筆資料的 activityId 是否都與第一筆相同
+  //   const isValidActivityId = req.body.tickTypes.every((data) => data.activityId === activityId
+  //   );
 
-    if (!isValidActivityId) {
-      return res.status(400).json({ error: 'All activityIds must be the same' });
-    }
-  } 
+  //   if (!isValidActivityId) {
+  //     return res.status(400).json({ error: 'All activityIds must be the same' });
+  //   }
+  // } 
 
-  //Check activity
-  if (!activityId)
-    throw errorTable.targetNotProvideError("Activity");
 
-  //3)創造ticketType
+  //創造ticketType
   const session = await mongoose.startSession();
   session.startTransaction();
   ticketTypes = await TicketType.create(req.body.tickTypes, { session: session });
@@ -87,7 +82,7 @@ export const createAll = catchAsync(async (req, res, next) => {
   await session.commitTransaction();
   session.endSession();
 
- const data = ticketTypes.map((obj) => helper.sanitizeCreatedDoc(obj));
+  const data = ticketTypes.map((obj) => helper.sanitizeCreatedDoc(obj));
 
   res.status(200).json({
     status: "success",
@@ -96,28 +91,28 @@ export const createAll = catchAsync(async (req, res, next) => {
 });
 
 export const updateAll = catchAsync(async (req, res, next) => {
-  let ticketTypes, activityId,features;
-  const  updatas=[];
+  let ticketTypes, activityId, features;
+  const updatas = [];
 
-  //檢查每筆資料的 activityId 
-  if (Array.isArray(req.body.tickTypes)) {
+  // //檢查每筆資料的 activityId 
+  // if (Array.isArray(req.body.tickTypes)) {
 
-    //確認新增資料皆為相同活動
-    activityId = req.body.tickTypes[0].activityId; // 取得第一筆資料的 activityId
+  //   //確認新增資料皆為相同活動
+  //   activityId = req.body.tickTypes[0].activityId; // 取得第一筆資料的 activityId
 
-    // 檢查每筆資料的 activityId 是否都與第一筆相同
-    const isValidActivityId = req.body.tickTypes.every((data) => data.activityId === activityId);
+  //   // 檢查每筆資料的 activityId 是否都與第一筆相同
+  //   const isValidActivityId = req.body.tickTypes.every((data) => data.activityId === activityId);
 
-    if (!isValidActivityId) {
-      return res.status(400).json({ error: 'All activityIds must be the same' });
-    }
-  } 
+  //   if (!isValidActivityId) {
+  //     return res.status(400).json({ error: 'All activityIds must be the same' });
+  //   }
+  // }
 
   //Check activity
-  if (!activityId)
-    throw errorTable.targetNotProvideError("Activity");
+  // if (!activityId)
+  //   throw errorTable.targetNotProvideError("Activity");
 
-  //3)Update ticketType
+  //Update ticketType
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -128,10 +123,10 @@ export const updateAll = catchAsync(async (req, res, next) => {
     const options = { new: true, runValidators: true, session: session };
     const updatedDoc = await TicketType.findOneAndUpdate(filter, update, options);
 
-     features = new queryFeatures(updatedDoc, req.query);
-     updatas.push(await features.query);
+    features = new queryFeatures(updatedDoc, req.query);
+    updatas.push(await features.query);
 
-  if (!updatas) throw errorTable.idNotFoundError();
+    if (!updatas) throw errorTable.idNotFoundError();
 
   }));
 
@@ -145,35 +140,35 @@ export const updateAll = catchAsync(async (req, res, next) => {
 });
 
 export const deleteAll = catchAsync(async (req, res, next) => {
-  let  activityId;
+  let activityId;
 
-  //檢查每筆資料的 activityId 
-  if (Array.isArray(req.body.tickTypes)) {
+  // //檢查每筆資料的 activityId 
+  // if (Array.isArray(req.body.tickTypes)) {
 
-    //確認新增資料皆為相同活動
-    activityId = req.body.tickTypes[0].activityId; // 取得第一筆資料的 activityId
+  //   //確認新增資料皆為相同活動
+  //   activityId = req.body.tickTypes[0].activityId; // 取得第一筆資料的 activityId
 
-    // 檢查每筆資料的 activityId 是否都與第一筆相同
-    const isValidActivityId = req.body.tickTypes.every((data) => data.activityId === activityId);
+  //   // 檢查每筆資料的 activityId 是否都與第一筆相同
+  //   const isValidActivityId = req.body.tickTypes.every((data) => data.activityId === activityId);
 
-    if (!isValidActivityId) {
-      return res.status(400).json({ error: 'All activityIds must be the same' });
-    }
-  } 
+  //   if (!isValidActivityId) {
+  //     return res.status(400).json({ error: 'All activityIds must be the same' });
+  //   }
+  // }
 
-  //Check activity
-  if (!activityId)
-    throw errorTable.targetNotProvideError("Activity");
+  // //Check activity
+  // if (!activityId)
+  //   throw errorTable.targetNotProvideError("Activity");
 
   //3)Update ticketType
-const session = await mongoose.startSession();
+  const session = await mongoose.startSession();
   session.startTransaction();
 
   await Promise.all(req.body.tickTypes.map(async (data) => {
     const update = { deletedAt: Date.now() };
-    const options = {session: session };
-     await TicketType.findByIdAndUpdate(data.id, update, options);
-     
+    const options = { session: session };
+    await TicketType.findByIdAndUpdate(data.id, update, options);
+
   }));
   await session.commitTransaction();
   session.endSession();
@@ -183,25 +178,21 @@ const session = await mongoose.startSession();
 });
 
 export const checkOwner = catchAsync(async (req, res, next) => {
-  let activityId;
+  let activityId = req.body.activityId;
 
-  //確認資料為單筆或多筆
-  if (Array.isArray(req.body.tickTypes)) {// 多筆資料
+  //Check activity
+  if (!activityId)
+    throw errorTable.targetNotProvideError("Activity");
 
-    //確認新增資料皆為相同活動
-    activityId = req.body.tickTypes[0].activityId; // 取得第一筆資料的 activityId
+  //確認資料多筆
+  if (req.body.tickTypes) {
 
-    // 檢查每筆資料的 activityId 是否都與第一筆相同
-    const isValidActivityId = req.body.tickTypes.every((data) => data.activityId === activityId);
+    // 在每個 tickType 中加入 activityId
+    req.body.tickTypes.forEach((tickType) => {
+      tickType.activityId = activityId;
+    });
+  }
 
-    if (!isValidActivityId) {
-      return res.status(400).json({ error: 'All activityIds must be the same' });
-    }
-   } 
-   else{
-    activityId=req.body.activityId;
-   }
-   
   //Find orgid、ownerId
   const activity = await Activity.findById(activityId);
   const orgId = activity.orgId.toString();
@@ -216,10 +207,10 @@ export const checkOwner = catchAsync(async (req, res, next) => {
   next();
 });
 
-export const checkData = catchAsync(async (req, res, next) => {
-//Check activity
+export const checkSingleTicketTypeData = catchAsync(async (req, res, next) => {
+  //Check activity
   if (!req.body.activityId)
-  throw errorTable.targetNotProvideError("Activity");
+    throw errorTable.targetNotProvideError("Activity");
 
   next();
 });
