@@ -22,7 +22,7 @@ const systemNoticeSchema = new mongoose.Schema(
     deletedAt: { type: Date, select: false },
     __v: { type: Number, select: false },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 systemNoticeSchema.pre(/^find/, function () {
   if (!(this.$locals && this.$locals.getDeleted))
@@ -30,8 +30,12 @@ systemNoticeSchema.pre(/^find/, function () {
 });
 systemNoticeSchema
   .virtual("isPublished")
-  .get(() => this.publishAt < Date.now());
-systemNoticeSchema.virtual("isExpired").get(() => this.expiredAt > Date.now());
+  .get(function(){
+    this.publishAt < Date.now()
+  });
+systemNoticeSchema.virtual("isExpired").get(function(){
+  this.expiredAt > Date.now()
+});
 
 const SystemNotice = mongoose.model("SystemNotice", systemNoticeSchema);
 
