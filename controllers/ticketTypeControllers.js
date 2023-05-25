@@ -58,22 +58,7 @@ export const getAllActivityTickets = catchAsync(async (req, res, next) => {
 
 export const createAll = catchAsync(async (req, res, next) => {
   let ticketTypes;
-  // //檢查每筆資料的 activityId 
-  // if (Array.isArray(req.body.tickTypes)) {
-
-  //   //確認新增資料皆為相同活動
-  //   activityId = req.body.tickTypes[0].activityId; // 取得第一筆資料的 activityId
-
-  //   // 檢查每筆資料的 activityId 是否都與第一筆相同
-  //   const isValidActivityId = req.body.tickTypes.every((data) => data.activityId === activityId
-  //   );
-
-  //   if (!isValidActivityId) {
-  //     return res.status(400).json({ error: 'All activityIds must be the same' });
-  //   }
-  // } 
-
-
+ 
   //創造ticketType
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -94,25 +79,6 @@ export const updateAll = catchAsync(async (req, res, next) => {
   let ticketTypes, activityId, features;
   const updatas = [];
 
-  // //檢查每筆資料的 activityId 
-  // if (Array.isArray(req.body.tickTypes)) {
-
-  //   //確認新增資料皆為相同活動
-  //   activityId = req.body.tickTypes[0].activityId; // 取得第一筆資料的 activityId
-
-  //   // 檢查每筆資料的 activityId 是否都與第一筆相同
-  //   const isValidActivityId = req.body.tickTypes.every((data) => data.activityId === activityId);
-
-  //   if (!isValidActivityId) {
-  //     return res.status(400).json({ error: 'All activityIds must be the same' });
-  //   }
-  // }
-
-  //Check activity
-  // if (!activityId)
-  //   throw errorTable.targetNotProvideError("Activity");
-
-  //Update ticketType
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -142,25 +108,7 @@ export const updateAll = catchAsync(async (req, res, next) => {
 export const deleteAll = catchAsync(async (req, res, next) => {
   let activityId;
 
-  // //檢查每筆資料的 activityId 
-  // if (Array.isArray(req.body.tickTypes)) {
-
-  //   //確認新增資料皆為相同活動
-  //   activityId = req.body.tickTypes[0].activityId; // 取得第一筆資料的 activityId
-
-  //   // 檢查每筆資料的 activityId 是否都與第一筆相同
-  //   const isValidActivityId = req.body.tickTypes.every((data) => data.activityId === activityId);
-
-  //   if (!isValidActivityId) {
-  //     return res.status(400).json({ error: 'All activityIds must be the same' });
-  //   }
-  // }
-
-  // //Check activity
-  // if (!activityId)
-  //   throw errorTable.targetNotProvideError("Activity");
-
-  //3)Update ticketType
+  //Update ticketType
   const session = await mongoose.startSession();
   session.startTransaction();
 
