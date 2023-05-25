@@ -207,11 +207,5 @@ export const checkOwner = catchAsync(async (req, res, next) => {
   next();
 });
 
-export const checkSingleTicketTypeData = catchAsync(async (req, res, next) => {
-  //Check activity
-  if (!req.body.activityId)
-    throw errorTable.targetNotProvideError("Activity");
 
-  next();
-});
 
