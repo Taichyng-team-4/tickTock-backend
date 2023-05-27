@@ -8,33 +8,32 @@ import ActivityNotice from "../models/activityNotice.js";
 
 export const createOne = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
+  const { activityId } = req.body;
 
-  const { activityId, ...rest } = req.body;
   // 檢查是否提供了有效的 activityId
-  if (!activityId) {
-    throw errorTable.targetNotFoundError("activityId");
-  }
+  if (!activityId) throw errorTable.targetNotFoundError("activityId");
 
   // 在這裡進行查詢，確認 activityId 是否存在於 activity 資料表中
   const activity = await Activity.findById(activityId);
+
   // 如果 activityId 對應的活動不存在，則拋出一個錯誤
-  if (!activity) {
-    throw errorTable.targetNotFindError("activity");
-  }
+  if (!activity) throw errorTable.targetNotFindError("activity");
 
   // 找到該活動所屬的組織
   const organization = await Org.findOne({
     ownerId: userId,
     _id: activity.orgId,
   });
+
   // 如果組織不存在或使用者不是該組織的擁有者，拋出錯誤
-  if (!organization) {
-    throw errorTable.noPermissionError();
-  }
+  if (!organization) throw errorTable.noPermissionError();
+
+  // Change the them to local
+  req.body.publishAt = helper.toLocalTime(req.body.publishAt);
+  req.body.expiredAt = helper.toLocalTime(req.body.expiredAt);
 
   // 建立包含 activityId 的新物件
-  const newData = { activityId, ...rest };
-  const data = await ActivityNotice.create(newData);
+  const data = await ActivityNotice.create(req.body);
 
   res.status(200).json({
     status: "success",
@@ -85,7 +84,7 @@ export const updateOne = catchAsync(async (req, res, next) => {
 
 export const deleteOne = catchAsync(async (req, res, next) => {
   const noticeId = req.params.id;
-  const notice = await Model.findById(noticeId);
+  const notice = await ActivityNotice.findById(noticeId);
   if (!notice) {
     throw errorTable.targetNotFindError("activity");
   }

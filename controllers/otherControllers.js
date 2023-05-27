@@ -1,4 +1,6 @@
 import FAQ from "../models/faq.js";
+import systemNotice from "../models/systemNotice.js";
+import activityNotice from "../models/activityNotice.js";
 import Partner from "../models/partners.js";
 import * as helper from "../utils/helper/helper.js";
 import catchAsync from "../utils/error/catchAsync.js";
@@ -28,12 +30,49 @@ export const getHome = catchAsync(async (req, res, next) => {
       helper.removeFieldsId(el, req.query.pop.split(","))
     );
 
+  const activityNoticeFeatures = new queryFeatures(
+    activityNotice.find({ expiredAt: { $gte: Date.now() } }),
+    req.query
+  )
+    .filter()
+    .select();
+
+  let activityNotices = await activityNoticeFeatures.query;
+  activityNotices = helper.removeDocsObjId(activityNotices);
+  if (req.query.pop)
+    activityNotices = activityNotices.map((el) =>
+      helper.removeFieldsId(el, req.query.pop.split(","))
+    );
+
+  const systemNoticeFeatures = new queryFeatures(
+    systemNotice.find({ expiredAt: { $gte: Date.now() } }),
+    req.query
+  )
+    .filter()
+    .select();
+
+  let systemNotices = await systemNoticeFeatures.query;
+  systemNotices = helper.removeDocsObjId(systemNotices);
+  if (req.query.pop)
+    systemNotices = systemNotices.map((el) =>
+      helper.removeFieldsId(el, req.query.pop.split(","))
+    );
+  // faqs,
+  // category: ["music", "sport", "drama", "art", "sport", "exhibition"],
+  // partner,
   res.status(200).json({
     status: "success",
     data: {
-      faqs,
-      category: ["music", "sport", "drama", "art", "sport", "exhibition"],
-      partner,
+      notice: {
+        activity: {
+          count: activityNotices.length,
+          data: activityNotices,
+        },
+        system: {
+          count: systemNotices.length,
+          data: systemNotices,
+        },
+      },
     },
   });
 });
