@@ -2,11 +2,19 @@ import express from "express";
 import { check } from "express-validator";
 import Activity from "../models/activity.js";
 import * as factory from "../controllers/factory.js";
+import ticketTypeRouter from "../routes/ticketType.js";
 import * as authControllers from "../controllers/authControllers.js";
 import * as shareControllers from "../controllers/shareControllers.js";
 import * as activityControllers from "../controllers/activityControllers.js";
+import * as ticketTypeControllers from "../controllers/ticketTypeControllers.js";
 
 const router = express.Router();
+
+router.use(
+  "/:activityId/ticketTypes",
+  ticketTypeControllers.setActivity,
+  ticketTypeRouter
+);
 
 router
   .route("/")
