@@ -7,7 +7,7 @@ import queryFeatures from "../utils/helper/queryFeatures.js";
 import Activity from "../models/activity.js";
 import Org from "../models/org.js";
 
-export const setActivity = catchAsync(async (req, res, next) => {
+export const setActivityId = catchAsync(async (req, res, next) => {
   req.body = { ...req.body, activityId: req.params.activityId };
   req.query.activityId = req.params.activityId;
   next();

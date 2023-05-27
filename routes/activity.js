@@ -12,7 +12,7 @@ const router = express.Router();
 
 router.use(
   "/:activityId/ticketTypes",
-  ticketTypeControllers.setActivity,
+  ticketTypeControllers.setActivityId,
   ticketTypeRouter
 );
 
