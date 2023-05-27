@@ -10,12 +10,12 @@ router.use(authControllers.authToken);
 
 router.route("/")
       .get(factory.getAll(ActivityNotice))
-      .post(activityNoticeControllers.createOne(ActivityNotice));
+      .post(activityNoticeControllers.createOne);
       
 router
       .get("/:id", factory.getOne(ActivityNotice))
-      .patch("/:newId", activityNoticeControllers.updateOne(ActivityNotice))
-      .delete("/:newId", activityNoticeControllers.deleteOne(ActivityNotice));
+      .patch("/:id", activityNoticeControllers.updateOne)
+      .delete("/:id", activityNoticeControllers.deleteOne);
 
 
 export default router;
