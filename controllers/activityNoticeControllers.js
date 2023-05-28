@@ -11,7 +11,7 @@ export const createOne = (Model) =>
   catchAsync(async (req, res, next) => {
     const userId = req.user.id;
 
-    const { activityId, ...rest } = req.body;
+    const { activityId, title, content, publishAt, ...rest } = req.body;
     // 檢查是否提供了有效的 activityId
     if (!activityId) {
       throw errorTable.targetNotFoundError("activityId");
@@ -24,6 +24,17 @@ export const createOne = (Model) =>
       throw errorTable.targetNotFindError("activity");
     }
 
+    // 檢查 title、content 和 publishAt 是否存在
+    if (!req.body.title) {
+      throw errorTable.targetNotFindError('title');
+    }
+    if (!req.body.content) {
+      throw errorTable.targetNotFindError('content');
+    }
+    if (!req.body.publishAt) {
+      throw errorTable.targetNotFindError('publishAt');
+    }
+
     // 找到該活動所屬的組織
     const organization = await Org.findOne({ ownerId: userId, _id: activity.orgId });
     // 如果組織不存在或使用者不是該組織的擁有者，拋出錯誤
@@ -32,7 +43,7 @@ export const createOne = (Model) =>
     }
 
     // 建立包含 activityId 的新物件
-    const newData = { activityId, ...rest };
+    const newData = { activityId, title, content, publishAt, ...rest } ;
     const data = await Model.create(newData);
 
     res.status(200).json({
@@ -49,7 +60,7 @@ export const updateOne = (Model) => catchAsync(async (req, res, next) => {
   const notice = await Model.findById(noticeId);
   // 如果活動消息不存在，拋出 ID 未找到的錯誤
   if (!notice) {
-    throw errorTable.targetNotFindError("activity");
+    throw errorTable.targetNotFindError("noticeID");
   }
 
   // 取得活動
@@ -61,6 +72,15 @@ export const updateOne = (Model) => catchAsync(async (req, res, next) => {
   // 如果組織不存在或使用者不是該組織的擁有者，拋出錯誤
   if (!organization) {
     throw errorTable.noPermissionError();
+  }
+
+
+  // 檢查 title、content 是否存在
+  if (!req.body.title) {
+    throw errorTable.targetNotFindError('title');
+  }
+  if (!req.body.content) {
+    throw errorTable.targetNotFindError('content');
   }
 
   // 更新活動消息
@@ -85,7 +105,7 @@ export const deleteOne = (Model) => catchAsync(async (req, res, next) => {
   const noticeId = req.params.newId;
   const notice = await Model.findById(noticeId);
   if (!notice) {
-    throw errorTable.targetNotFindError("activity");
+    throw errorTable.targetNotFindError("noticeId");
   }
 
   // 取得活動
