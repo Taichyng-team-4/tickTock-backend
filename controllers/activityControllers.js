@@ -12,8 +12,8 @@ export const createOne = catchAsync(async (req, res, next) => {
   let venue, setting, activity;
 
   // 1) Conver datetime
-  req.body.startAt = helper.toUTC(req.body.startAt);
-  req.body.endAt = helper.toUTC(req.body.endAt);
+  req.body.startAt = helper.toLocalTime(req.body.startAt);
+  req.body.endAt = helper.toLocalTime(req.body.endAt);
 
   // 2) Check Venue
   if (!req.body.venue && !req.body.venueId)
@@ -61,8 +61,8 @@ export const updateOne = catchAsync(async (req, res, next) => {
   let venue, setting, features, data;
 
   // 1) Conver datetime
-  if (req.body.startAt) req.body.startAt = helper.toUTC(req.body.startAt);
-  if (req.body.endAt) req.body.endAt = helper.toUTC(req.body.endAt);
+  if (req.body.startAt) req.body.startAt = helper.toLocalTime(req.body.startAt);
+  if (req.body.endAt) req.body.endAt = helper.toLocalTime(req.body.endAt);
 
   // 2) Sanitize req body
   delete req.body.settingId;

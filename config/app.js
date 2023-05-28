@@ -103,8 +103,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Routes
 app.use("/api/v1/orgs", orgRouters);
-app.use("/api/v1/activityNotice", activityNoticeRouters);
-app.use("/api/v1/systemNotice", systemNoticeRouters);
+app.use("/api/v1/notices/activity", activityNoticeRouters);
+app.use("/api/v1/notices/system", systemNoticeRouters);
 app.use("/api/v1/users", userRouters);
 app.use("/api/v1/profile", profileRouters);
 app.use("/api/v1/auths", authRouters);
