@@ -12,17 +12,6 @@ export const createOne = (Model) =>
     const userId = req.user.id;
     const { title, content, publishAt, ...rest } = req.body;
 
-    // 檢查 title、content 和 publishAt 是否存在
-    if (!req.body.title) {
-      throw errorTable.targetNotFindError('title');
-    }
-    if (!req.body.content) {
-      throw errorTable.targetNotFindError('content');
-    }
-    if (!req.body.publishAt) {
-      throw errorTable.targetNotFindError('publishAt');
-    }
-
     // 建立新物件
     const newData = { title, content, publishAt, userId, ...rest } ;
     const data = await Model.create(newData);
@@ -36,13 +25,6 @@ export const createOne = (Model) =>
 
 export const updateOne = (Model) => catchAsync(async (req, res, next) => {
 
-  // 檢查 title、content 和 publishAt 是否存在
-  if (!req.body.title) {
-    throw errorTable.targetNotFindError('title');
-  }
-  if (!req.body.content) {
-    throw errorTable.targetNotFindError('content');
-  }
   
   const noticeId = req.params.newId;
   // 找到該活動消息

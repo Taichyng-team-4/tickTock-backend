@@ -24,17 +24,6 @@ export const createOne = (Model) =>
       throw errorTable.targetNotFindError("activity");
     }
 
-    // 檢查 title、content 和 publishAt 是否存在
-    if (!req.body.title) {
-      throw errorTable.targetNotFindError('title');
-    }
-    if (!req.body.content) {
-      throw errorTable.targetNotFindError('content');
-    }
-    if (!req.body.publishAt) {
-      throw errorTable.targetNotFindError('publishAt');
-    }
-
     // 找到該活動所屬的組織
     const organization = await Org.findOne({ ownerId: userId, _id: activity.orgId });
     // 如果組織不存在或使用者不是該組織的擁有者，拋出錯誤
@@ -75,13 +64,6 @@ export const updateOne = (Model) => catchAsync(async (req, res, next) => {
   }
 
 
-  // 檢查 title、content 是否存在
-  if (!req.body.title) {
-    throw errorTable.targetNotFindError('title');
-  }
-  if (!req.body.content) {
-    throw errorTable.targetNotFindError('content');
-  }
 
   // 更新活動消息
   const updateQuery = Model.findByIdAndUpdate(noticeId, req.body, {

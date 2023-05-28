@@ -9,19 +9,19 @@ const activityNoticeSchema = new mongoose.Schema(
     },
     title: {
       type: String,
-      require: [true, "An activity notice should has a title"],
+      required: [true, "An activity notice should has a title"],
     },
     content: {
       type: String,
-      require: [true, "An activity notice should has a content"],
+      required: [true, "An activity notice should has a content"],
     },
     publishAt: {
       type: Date,
-      require: [true, "An activity notice should has a release date"],
+      required: [true, "An activity notice should has a release date"],
     },
     expiredAt: {
       type: Date,
-      require: [true, "An activity notice should has a expiration date"],
+      required: [true, "An activity notice should has a expiration date"],
     },
     deletedAt: { type: Date, select: false },
     __v: { type: Number, select: false },
