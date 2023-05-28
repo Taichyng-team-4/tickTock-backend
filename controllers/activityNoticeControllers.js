@@ -48,7 +48,7 @@ export const updateOne = catchAsync(async (req, res, next) => {
   const notice = await ActivityNotice.findById(noticeId);
   // 如果活動消息不存在，拋出 ID 未找到的錯誤
   if (!notice) {
-    throw errorTable.targetNotFindError("activity");
+    throw errorTable.targetNotFindError("noticeID");
   }
 
   // 取得活動
@@ -64,6 +64,8 @@ export const updateOne = catchAsync(async (req, res, next) => {
   if (!organization) {
     throw errorTable.noPermissionError();
   }
+
+
 
   // 更新活動消息
   const updateQuery = ActivityNotice.findByIdAndUpdate(noticeId, req.body, {
@@ -86,7 +88,7 @@ export const deleteOne = catchAsync(async (req, res, next) => {
   const noticeId = req.params.id;
   const notice = await ActivityNotice.findById(noticeId);
   if (!notice) {
-    throw errorTable.targetNotFindError("activity");
+    throw errorTable.targetNotFindError("noticeId");
   }
 
   // 取得活動
