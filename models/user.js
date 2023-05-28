@@ -62,6 +62,10 @@ const userSchema = new mongoose.Schema(
       required: [true, "A user should has his birth"],
       select: false,
     },
+    area: {
+      type: String,
+      default: "",
+    },
     googleId: {
       type: String,
       select: false,
