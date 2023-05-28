@@ -1,17 +1,32 @@
 import express from "express";
-
+import TicketType from "../models/ticketType.js";
+import * as factory from "../controllers/factory.js";
 import * as ticketTypeController from "../controllers/ticketTypeControllers.js";
+import * as authControllers from "../controllers/authControllers.js";
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router
   .route("/")
-  .get(ticketTypeController.getAll)
-  .post(ticketTypeController.createOne);
+  .get(factory.getAll(TicketType))
+  .post(
+    authControllers.authToken,
+    ticketTypeController.checkOwner,
+    ticketTypeController.createMany
+  )
+  .delete(
+    authControllers.authToken,
+    ticketTypeController.checkOwner,
+    ticketTypeController.deleteMany
+  );
+
 router
-  .route("/:ticketTypeId")
-  .get(ticketTypeController.getOne)
-  .put(ticketTypeController.updateOne)
-  .delete(ticketTypeController.deleteOne);
+  .route("/:id")
+  .get(factory.getOne(TicketType))
+  .patch(
+    authControllers.authToken,
+    ticketTypeController.checkOwner,
+    ticketTypeController.updateMany
+  );
 
 export default router;

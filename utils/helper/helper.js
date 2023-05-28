@@ -39,6 +39,7 @@ export const replaceMongooseOpt = (obj, validOperators) => {
 };
 
 export const toUTC = (date) => date.split("/").join("-");
+export const toLocalTime = (date) => date.split("-").join("/");
 
 export const removeId = (e) => {
   if (e.endsWith("Id")) return e.slice(0, -2);

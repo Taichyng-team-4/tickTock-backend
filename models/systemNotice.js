@@ -15,7 +15,6 @@ const systemNoticeSchema = new mongoose.Schema(
       type: String,
       required: [true, "A system notice should has a content"],
     },
-    isPublish: { type: Boolean, default: false },
     publishAt: {
       type: Date,
       required: [true, "An system notice should has a release date"],
@@ -23,6 +22,12 @@ const systemNoticeSchema = new mongoose.Schema(
     expiredAt: {
       type: Date,
       required: [true, "An system notice should has a expiration date"],
+      validate: [
+        function (val) {
+          return val >= this.publishAt;
+        },
+        "Expiration date should expirate after publish",
+      ],
     },
     deletedAt: { type: Date, select: false },
     __v: { type: Number, select: false },
@@ -33,13 +38,13 @@ systemNoticeSchema.pre(/^find/, function () {
   if (!(this.$locals && this.$locals.getDeleted))
     this.where({ deletedAt: null });
 });
-systemNoticeSchema
-  .virtual("isPublished")
-  .get(function(){
-    this.publishAt < Date.now()
-  });
-systemNoticeSchema.virtual("isExpired").get(function(){
-  this.expiredAt > Date.now()
+
+systemNoticeSchema.virtual("isPublished").get(function () {
+  return this.publishAt < Date.now();
+});
+
+systemNoticeSchema.virtual("isExpired").get(function () {
+  return this.expiredAt < Date.now();
 });
 
 const SystemNotice = mongoose.model("SystemNotice", systemNoticeSchema);

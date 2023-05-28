@@ -26,6 +26,7 @@ import otherRouters from "../routes/other.js";
 import activityRouters from "../routes/activity.js";
 import venueRouters from "../routes/venue.js";
 import settingRouters from "../routes/activitySetting.js";
+import ticketTypeRouters from "../routes/ticketType.js"
 import partnerRouters from "../routes/partner.js";
 import faqRouters  from "../routes/faq.js";
 
@@ -102,8 +103,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Routes
 app.use("/api/v1/orgs", orgRouters);
-app.use("/api/v1/activityNotice", activityNoticeRouters);
-app.use("/api/v1/systemNotice", systemNoticeRouters);
+app.use("/api/v1/notices/activity", activityNoticeRouters);
+app.use("/api/v1/notices/system", systemNoticeRouters);
 app.use("/api/v1/users", userRouters);
 app.use("/api/v1/profile", profileRouters);
 app.use("/api/v1/auths", authRouters);
@@ -113,6 +114,7 @@ app.use("/api/v1/tickets", ticketRouters);
 app.use("/api/v1/activities", activityRouters);
 app.use("/api/v1/venues", venueRouters);
 app.use("/api/v1/settings", settingRouters);
+app.use("/api/v1/ticketTypes",ticketTypeRouters);
 app.use("/api/v1/partners", partnerRouters);
 app.use("/api/v1/faqs", faqRouters);
 app.use("/api/v1", otherRouters);

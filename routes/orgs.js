@@ -19,6 +19,10 @@ router
   );
 
 router
+  .route("/me")
+  .get(authControllers.authToken, orgControllers.getMe, factory.getAll(Org))
+
+router
   .route("/:id")
   .get(factory.getOne(Org))
   .patch(

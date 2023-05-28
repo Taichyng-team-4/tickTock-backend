@@ -22,6 +22,12 @@ const activityNoticeSchema = new mongoose.Schema(
     expiredAt: {
       type: Date,
       required: [true, "An activity notice should has a expiration date"],
+      validate: [
+        function (val) {
+          return val >= this.publishAt;
+        },
+        "Expiration date should expirate after publish",
+      ],
     },
     deletedAt: { type: Date, select: false },
     __v: { type: Number, select: false },
@@ -38,18 +44,13 @@ activityNoticeSchema.pre(/^find/, function () {
     this.where({ deletedAt: null });
 });
 
-activityNoticeSchema
-  .virtual("isPublished")
-  .get(function(){
-    return this.publishAt < Date.now()
-  });
+activityNoticeSchema.virtual("isPublished").get(function () {
+  return this.publishAt < Date.now();
+});
 
-  
-activityNoticeSchema
-  .virtual("isExpired")
-  .get(function(){
-    return this.expiredAt > Date.now()
-  });
+activityNoticeSchema.virtual("isExpired").get(function () {
+  return this.expiredAt < Date.now();
+});
 
 const ActivityNotice = mongoose.model("ActivityNotice", activityNoticeSchema);
 
