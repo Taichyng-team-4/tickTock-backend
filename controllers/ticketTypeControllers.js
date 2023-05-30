@@ -13,7 +13,7 @@ export const setActivityId = catchAsync(async (req, res, next) => {
   next();
 });
 
-export const checkOwner = catchAsync(async (req, res, next) => {
+export const checkOwnerAndJoinActivityId = catchAsync(async (req, res, next) => {
   const activityId = req.body.activityId;
 
   //Check activity
@@ -63,20 +63,30 @@ export const updateMany = catchAsync(async (req, res, next) => {
   //更新
   await Promise.all(
     req.body.tickTypes.map(async (data) => {
-      const filter = { activityId: data.activityId, _id: data.id };
-      const update = { $set: data };
-      const options = { new: true, runValidators: true, session: session };
-      const updatedDoc = await TicketType.findOneAndUpdate(
-        filter,
-        update,
-        options
-      );
 
-      features = new queryFeatures(updatedDoc, req.query);
-      updatas.push(await features.query);
+      if (data.delete==="D" ) {
+        const filter = { activityId: data.activityId, _id: data.id };
+        const update = { deletedAt: Date.now() };
+        const options = { session: session };
+        await TicketType.findByIdAndUpdate(filter, update, options);
+      }
+      else {
+        const filter = { activityId: data.activityId, _id: data.id };
+        const update = { $set: data };
+        const options = { new: true, runValidators: true, session: session };
+        const updatedDoc = await TicketType.findOneAndUpdate(
+          filter,
+          update,
+          options
+        );
 
-      if (!updatas) throw errorTable.idNotFoundError();
-    })
+        features = new queryFeatures(updatedDoc, req.query);
+        updatas.push(await features.query);
+
+        if (!updatas) throw errorTable.idNotFoundError();
+      }
+    }
+    )
   );
 
   await session.commitTransaction();

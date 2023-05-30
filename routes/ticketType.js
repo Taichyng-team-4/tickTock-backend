@@ -11,22 +11,22 @@ router
   .get(factory.getAll(TicketType))
   .post(
     authControllers.authToken,
-    ticketTypeController.checkOwner,
+    ticketTypeController.checkOwnerAndJoinActivityId,
     ticketTypeController.createMany
   )
   .delete(
     authControllers.authToken,
-    ticketTypeController.checkOwner,
+    ticketTypeController.checkOwnerAndJoinActivityId,
     ticketTypeController.deleteMany
-  );
-
-router
-  .route("/:id")
-  .get(factory.getOne(TicketType))
+  )
   .patch(
     authControllers.authToken,
-    ticketTypeController.checkOwner,
+    ticketTypeController.checkOwnerAndJoinActivityId,
     ticketTypeController.updateMany
   );
+router
+  .route("/:id")
+  .get(factory.getOne(TicketType));
+ 
 
 export default router;
