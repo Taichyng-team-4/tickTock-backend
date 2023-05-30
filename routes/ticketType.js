@@ -3,6 +3,7 @@ import TicketType from "../models/ticketType.js";
 import * as factory from "../controllers/factory.js";
 import * as ticketTypeController from "../controllers/ticketTypeControllers.js";
 import * as authControllers from "../controllers/authControllers.js";
+import * as ticketListControllers from "../controllers/ticketListControllers.js";
 
 const router = express.Router({ mergeParams: true });
 
@@ -13,7 +14,7 @@ router
     authControllers.authToken,
     ticketTypeController.checkOwner,
     ticketTypeController.createMany,
-    ticketTypeController.createTicketList,
+    ticketListControllers.createTicketList,
   )
   .delete(
     authControllers.authToken,
