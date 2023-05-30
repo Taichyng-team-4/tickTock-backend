@@ -12,13 +12,16 @@ router
   .post(
     authControllers.authToken,
     ticketTypeController.checkOwner,
-    ticketTypeController.createMany
+    ticketTypeController.createMany,
+    ticketTypeController.createTicketList,
   )
   .delete(
     authControllers.authToken,
     ticketTypeController.checkOwner,
     ticketTypeController.deleteMany
   );
+
+
 
 router
   .route("/:id")

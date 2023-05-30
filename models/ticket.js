@@ -66,6 +66,11 @@ const ticketSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    status: {
+      type: String,
+      require: [true, "A ticket list should has a status"],
+      unique: false,
+    },
     expiredAt: {
       type: Date,
       require: [true, "A ticket should mark the expired date"],

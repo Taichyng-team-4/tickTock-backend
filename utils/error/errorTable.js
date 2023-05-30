@@ -120,3 +120,6 @@ export const updateImgFailError = (err) =>
 
 export const targetNotFindError = (target) =>
 new AppError(`${target} does not exist.`, 400, "C10010003");
+
+export const targetExists = (target) =>
+new AppError(`${target} already exists.`, 400, "C10010003");
