@@ -13,6 +13,7 @@ export const getOne = (Model) =>
     let data = await features.query;
     if (!data) throw errorTable.idNotFoundError();
 
+    
     data = helper.removeDocObjId(data);
     if (req.query.pop)
       data = helper.removeFieldsId(data, req.query.pop.split(","));
@@ -29,9 +30,10 @@ export const getAll = (Model) =>
       .paginate()
       .populate()
       .includeDeleted();
-      
+
     let data = await features.query;
     data = helper.removeDocsObjId(data);
+
     if (req.query.pop)
       data = data.map((el) =>
         helper.removeFieldsId(el, req.query.pop.split(","))
