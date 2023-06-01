@@ -7,8 +7,6 @@ import queryFeatures from "../utils/helper/queryFeatures.js";
 import Activity from "../models/activity.js";
 import Org from "../models/org.js";
 
-import { v4 as uuidv4 } from "uuid";
-
 export const setActivityId = catchAsync(async (req, res, next) => {
   req.body = { ...req.body, activityId: req.params.activityId };
   req.query.activityId = req.params.activityId;
@@ -111,6 +109,3 @@ export const deleteMany = catchAsync(async (req, res, next) => {
 
   res.status(204).json({});
 });
-
-
-
