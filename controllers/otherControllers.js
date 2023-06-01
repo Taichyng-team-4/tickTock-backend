@@ -1,4 +1,5 @@
 import FAQ from "../models/faq.js";
+import * as s3 from "../utils/aws/s3.js";
 import Partner from "../models/partners.js";
 import * as helper from "../utils/helper/helper.js";
 import catchAsync from "../utils/error/catchAsync.js";
@@ -35,5 +36,23 @@ export const getHome = catchAsync(async (req, res, next) => {
       category: ["music", "sport", "drama", "art", "sport", "exhibition"],
       partner,
     },
+  });
+});
+
+export const updateImg = catchAsync(async (req, res, next) => {
+  let img = "";
+  if (req.file) {
+    // Update To S3
+    try {
+      img = await s3.uploadToS3(req.file);
+      img = await s3.getFileFromS3(img);
+    } catch (err) {
+      throw errorTable.idNotFoundError();
+    }
+  }
+
+  res.status(200).json({
+    status: "success",
+    data: img,
   });
 });
