@@ -13,7 +13,7 @@ export const setActivityId = catchAsync(async (req, res, next) => {
   next();
 });
 
-export const checkOwnerAndJoinActivityId = catchAsync(
+export const checkOwner = catchAsync(
   async (req, res, next) => {
     const activityId = req.body.activityId;
 

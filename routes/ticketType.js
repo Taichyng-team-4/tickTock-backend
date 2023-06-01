@@ -11,17 +11,17 @@ router
   .get(factory.getAll(TicketType))
   .post(
     authControllers.authToken,
-    ticketTypeController.checkOwnerAndJoinActivityId,
+    ticketTypeController.checkOwner,
     ticketTypeController.createMany
   )
   .delete(
     authControllers.authToken,
-    ticketTypeController.checkOwnerAndJoinActivityId,
+    ticketTypeController.checkOwner,
     ticketTypeController.deleteMany
   )
   .put(
     authControllers.authToken,
-    ticketTypeController.checkOwnerAndJoinActivityId,
+    ticketTypeController.checkOwner,
     ticketTypeController.updateMany
   );
 router
