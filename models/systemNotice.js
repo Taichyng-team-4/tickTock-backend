@@ -4,19 +4,19 @@ const systemNoticeSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      require: [true, "A system notice should has a title"],
+      required: [true, "A system notice should has a title"],
     },
     content: {
       type: String,
-      require: [true, "A system notice should has a content"],
+      required: [true, "A system notice should has a content"],
     },
     publishAt: {
       type: Date,
-      require: [true, "An system notice should has a release date"],
+      required: [true, "An system notice should has a release date"],
     },
     expiredAt: {
       type: Date,
-      require: [true, "An system notice should has a expiration date"],
+      required: [true, "An system notice should has a expiration date"],
       validate: [
         function (val) {
           return val >= this.publishAt;

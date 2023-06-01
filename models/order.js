@@ -14,7 +14,7 @@ const orderSchema = new mongoose.Schema(
     },
     finance_info: {
       type: String,
-      require: [true, "An order should has its transaction number"],
+      required: [true, "An order should has its transaction number"],
     },
     deletedAt: { type: Date, select: false },
     __v: { type: Number, select: false },
