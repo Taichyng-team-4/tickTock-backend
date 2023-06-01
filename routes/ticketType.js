@@ -19,7 +19,7 @@ router
     ticketTypeController.checkOwnerAndJoinActivityId,
     ticketTypeController.deleteMany
   )
-  .patch(
+  .put(
     authControllers.authToken,
     ticketTypeController.checkOwnerAndJoinActivityId,
     ticketTypeController.updateMany
