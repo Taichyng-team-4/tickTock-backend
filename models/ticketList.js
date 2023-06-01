@@ -32,7 +32,7 @@ const ticketListSchema = new mongoose.Schema(
   }
 );
 
-ticketListSchema.index({ ticketTypeId: 1, seatNo: 1 }, { unique: true });
+ticketListSchema.index({ ticketTypeId: 1, seatNo: 1, deletedAt: 1 }, { unique: true });
 
 const TicketList = mongoose.model("TicketList", ticketListSchema);
 
