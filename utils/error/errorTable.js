@@ -111,15 +111,13 @@ export const validateErrorHandler = (err) => {
 };
 
 export const updateImgFailError = (err) =>
-  new AppError(
-    `Update img fail`,
-    500,
-    "F10010001"
-  );
-
+  new AppError(`Update img fail`, 500, "F10010001");
 
 export const targetNotFindError = (target) =>
-new AppError(`${target} does not exist.`, 400, "C10010003");
+  new AppError(`${target} does not exist.`, 400, "C10010003");
 
 export const targetExists = (target) =>
-new AppError(`${target} already exists.`, 400, "C10010003");
+  new AppError(`${target} already exists.`, 400, "C10010003");
+
+export const dBTransactionFailError = () =>
+  new AppError("Unknown error happen!", 500, "F10010001");
