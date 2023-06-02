@@ -111,12 +111,10 @@ export const validateErrorHandler = (err) => {
 };
 
 export const updateImgFailError = (err) =>
-  new AppError(
-    `Update img fail`,
-    500,
-    "F10010001"
-  );
-
+  new AppError(`Update img fail`, 500, "F10010001");
 
 export const targetNotFindError = (target) =>
-new AppError(`${target} does not exist.`, 400, "C10010003");
+  new AppError(`${target} does not exist.`, 400, "C10010003");
+
+export const inputRelationshipError = (parent, child) =>
+  new AppError(`${child} does not belongs to ${parent}.`, 400, "C10020001");
