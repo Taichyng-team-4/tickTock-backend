@@ -45,12 +45,16 @@ export const createMany = catchAsync(async (req, res, next) => {
   //創造ticketType
   const ticketTypes = await TicketType.create(req.body.tickTypes);
 
-  const data = ticketTypes.map((obj) => helper.sanitizeCreatedDoc(obj));
+  const ticketTypeIds = ticketTypes.map((ticketType) => ticketType._id);
 
-  res.status(200).json({
-    status: "success",
-    data,
-  });
+  req.body.ticketTypeIds = ticketTypeIds;
+
+  const data = ticketTypes.map((obj) => helper.sanitizeCreatedDoc(obj));
+  next();
+  // res.status(200).json({
+  //   status: "success",
+  //   data,
+  // });
 });
 
 export const updateMany = catchAsync(async (req, res, next) => {

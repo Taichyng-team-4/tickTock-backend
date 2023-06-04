@@ -5,11 +5,11 @@ const faqSchema = new mongoose.Schema(
   {
     question: {
       type: String,
-      require: [true, "A FAQ should has a question"],
+      required: [true, "A FAQ should has a question"],
     },
     answer: {
       type: String,
-      require: [true, "A FAQ should has a answer"],
+      required: [true, "A FAQ should has a answer"],
     },
     deletedAt: { type: Date, select: false },
     __v: { type: Number, select: false },

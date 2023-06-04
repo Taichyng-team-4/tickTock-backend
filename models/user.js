@@ -12,13 +12,13 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      require: [true, "A user should has his passowrd"],
+      required: [true, "A user should has his passowrd"],
       minLength: [6, "password must at least 6 characters"],
       select: false,
     },
     passwordConfirm: {
       type: String,
-      require: [true, "A user should has his confromPassowrd"],
+      required: [true, "A user should has his confromPassowrd"],
       minLength: [6, "confromPassowrd must at least 6 characters"],
       validate: [
         function (val) {

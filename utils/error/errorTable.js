@@ -116,5 +116,12 @@ export const updateImgFailError = (err) =>
 export const targetNotFindError = (target) =>
   new AppError(`${target} does not exist.`, 400, "C10010003");
 
+export const targetExists = (target) =>
+  new AppError(`${target} already exists.`, 400, "C10010003");
+
+export const dBTransactionFailError = () =>
+  new AppError("Unknown error happen!", 500, "F10010001");
+
 export const inputRelationshipError = (parent, child) =>
   new AppError(`${child} does not belongs to ${parent}.`, 400, "C10020001");
+
