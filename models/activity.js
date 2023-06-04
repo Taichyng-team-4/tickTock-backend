@@ -22,6 +22,10 @@ const activitySchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: "TicketType",
     }],
+    ticketListId: {
+      type: mongoose.Types.ObjectId,
+      ref: "TicketList",
+    },
     category: {
       type: String,
       enum: {

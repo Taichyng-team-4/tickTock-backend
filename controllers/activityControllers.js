@@ -10,16 +10,29 @@ import * as errorTable from "../utils/error/errorTable.js";
 import queryFeatures from "../utils/helper/queryFeatures.js";
 import TicketType from "../models/ticketType.js";
 
+export const setActivityId = catchAsync(async (req, res, next) => {
+  const activityId = req.params.activityId
+    ? req.params.activityId
+    : req.params.id;
+  req.body = { ...req.body, activityId };
+  next();
+});
+
 export const checkOwner = catchAsync(async (req, res, next) => {
-  // 1) Find activity
-  const activity = await Activity.findById(req.params.id);
+  // 1) Check activityId
+  const activityId = req.body.activityId;
+  if (!activityId) throw errorTable.targetNotProvideError("activityId");
+
+  // 2) Find activity
+  const activity = await Activity.findById(activityId);
   if (!activity) throw errorTable.targetNotFindError("Activity");
 
-  // 2) Find org
+  // 3) Find org
   const orgId = activity.orgId.toString();
   const org = await Org.findById(orgId);
+  if (!(org._id && org.ownerId)) throw errorTable.noPermissionError();
 
-  // 3) Check permission
+  // 4) Check permission
   const ownerId = org.ownerId.toString();
   if (ownerId !== req.user.id) throw errorTable.noPermissionError();
   req.activityId = activity.id;

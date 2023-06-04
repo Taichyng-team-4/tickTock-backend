@@ -10,11 +10,11 @@ import * as ticketTypeControllers from "../controllers/ticketTypeControllers.js"
 
 const router = express.Router();
 
-// router.use(
-//   "/:activityId/ticketTypes",
-//   ticketTypeControllers.setActivityId,
-//   ticketTypeRouter
-// );
+router.use(
+  "/:activityId/ticketTypes",
+  activityControllers.setActivityId,
+  ticketTypeRouter
+);
 
 router
   .route("/")
@@ -37,12 +37,14 @@ router
   .get(factory.getOne(Activity))
   .patch(
     authControllers.authToken,
+    activityControllers.setActivityId,
     activityControllers.checkOwner,
     ticketTypeControllers.createUpdateTicketTypeInfo,
     activityControllers.updateOne
   )
   .delete(
     authControllers.authToken,
+    activityControllers.setActivityId,
     activityControllers.checkOwner,
     activityControllers.deleteOne
   );

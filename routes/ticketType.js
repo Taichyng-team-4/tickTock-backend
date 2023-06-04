@@ -3,6 +3,8 @@ import { body } from "express-validator";
 import TicketType from "../models/ticketType.js";
 import * as factory from "../controllers/factory.js";
 import * as authControllers from "../controllers/authControllers.js";
+import * as activityControllers from "../controllers/activityControllers.js";
+
 import * as shareControllers from "../controllers/shareControllers.js";
 import * as ticketTypeControllers from "../controllers/ticketTypeControllers.js";
 import * as ticketListControllers from "../controllers/ticketListControllers.js";
@@ -13,7 +15,7 @@ router.get("/", factory.getAll(TicketType));
 
 router.get("/:id", factory.getOne(TicketType));
 
-router.use(authControllers.authToken, ticketTypeControllers.checkOwner);
+router.use(authControllers.authToken, activityControllers.checkOwner);
 
 router
   .route("/")

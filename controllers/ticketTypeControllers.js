@@ -3,37 +3,8 @@ import catchAsync from "../utils/error/catchAsync.js";
 import TicketType from "../models/ticketType.js";
 import * as helper from "../utils/helper/helper.js";
 import * as errorTable from "../utils/error/errorTable.js";
-import Org from "../models/org.js";
 import Activity from "../models/activity.js";
 import * as ticketTypeHelper from "../utils/helper/ticketType.js";
-
-export const setActivityId = catchAsync(async (req, res, next) => {
-  req.body = { ...req.body, activityId: req.params.activityId };
-  req.query.activityId = req.params.activityId;
-  next();
-});
-
-export const checkOwner = catchAsync(async (req, res, next) => {
-  const activityId = req.body.activityId;
-
-  //Check activityId
-  if (!activityId) throw errorTable.targetNotProvideError("activityId");
-
-  //Find Activity
-  const activity = await Activity.findById(activityId);
-  if (!activity) throw errorTable.targetNotFoundError("Activity");
-
-  //Find orgId、ownerId
-  const orgId = activity.orgId.toString();
-  const result = await Org.findById(orgId);
-  if (!result._id || !result.ownerId) throw errorTable.noPermissionError();
-
-  //Check permission
-  const ownerId = result.ownerId.toString();
-  if (ownerId.toString() !== req.user._id.toString())
-    throw errorTable.noPermissionError();
-  next();
-});
 
 export const createMany = catchAsync(async (req, res, next) => {
   let ticketTypes, ticketTypeIds;
