@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const systemNoticeSchema = new mongoose.Schema(
   {
+    userId: {
+      type: mongoose.Types.ObjectId,
+      ref: "User",
+      required: [true, "An activity attendee should has an userId"],
+    },
     title: {
       type: String,
       required: [true, "A system notice should has a title"],

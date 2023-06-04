@@ -121,3 +121,7 @@ export const targetExists = (target) =>
 
 export const dBTransactionFailError = () =>
   new AppError("Unknown error happen!", 500, "F10010001");
+
+export const inputRelationshipError = (parent, child) =>
+  new AppError(`${child} does not belongs to ${parent}.`, 400, "C10020001");
+
