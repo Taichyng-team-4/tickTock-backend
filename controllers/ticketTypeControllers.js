@@ -3,9 +3,9 @@ import catchAsync from "../utils/error/catchAsync.js";
 import TicketType from "../models/ticketType.js";
 import * as helper from "../utils/helper/helper.js";
 import * as errorTable from "../utils/error/errorTable.js";
-import queryFeatures from "../utils/helper/queryFeatures.js";
-import Activity from "../models/activity.js";
 import Org from "../models/org.js";
+import Activity from "../models/activity.js";
+import queryFeatures from "../utils/helper/queryFeatures.js";
 
 export const setActivityId = catchAsync(async (req, res, next) => {
   req.body = { ...req.body, activityId: req.params.activityId };
@@ -13,37 +13,54 @@ export const setActivityId = catchAsync(async (req, res, next) => {
   next();
 });
 
-export const checkOwner = catchAsync(async (req, res, next) => {
-  const activityId = req.body.activityId;
+export const checkOwner = catchAsync(
+  async (req, res, next) => {
+    const activityId = req.body.activityId;
 
-  //Check activity
-  if (!activityId) throw errorTable.targetNotProvideError("Activity");
+    //Check activity
+    if (!activityId) throw errorTable.targetNotProvideError("Activity");
 
-  //確認資料多筆
-  if (req.body.tickTypes) {
-    // 在每個 tickType 中加入 activityId
-    req.body.tickTypes.forEach((tickType) => {
-      tickType.activityId = activityId;
-    });
+    //Find orgid、ownerId
+    const activity = await Activity.findById(activityId);
+    const orgId = activity.orgId.toString();
+    const result = await Org.findById(orgId);
+
+    if (!result._id || !result.ownerId) throw errorTable.noPermissionError();
+
+    //Check permission
+    const ownerId = result.ownerId.toString();
+    if (ownerId.toString() !== req.user._id.toString())
+      throw errorTable.noPermissionError();
+    next();
   }
-
-  //Find orgid、ownerId
-  const activity = await Activity.findById(activityId);
-  const orgId = activity.orgId.toString();
-  const result = await Org.findById(orgId);
-
-  if (!result._id || !result.ownerId) throw errorTable.noPermissionError();
-
-  //Check permission
-  const ownerId = result.ownerId.toString();
-  if (ownerId.toString() !== req.user._id.toString())
-    throw errorTable.noPermissionError();
-  next();
-});
+);
 
 export const createMany = catchAsync(async (req, res, next) => {
+  let ticketTypes;
+  const activityId = req.body.activityId;
+
+  if (!(req.body.tickTypes && Array.isArray(req.body.tickTypes)))
+    errorTable.validateError("tickTypes");
+
+  //確認資料多筆，在每個 tickType 中加入 activityId
+  req.body.tickTypes.forEach((tickType) => {
+    tickType.activityId = activityId;
+    tickType.startAt = helper.toLocalTime(tickType.startAt);
+    tickType.endAt = helper.toLocalTime(tickType.endAt);
+  });
+
   //創造ticketType
-  const ticketTypes = await TicketType.create(req.body.tickTypes);
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    ticketTypes = await TicketType.create(req.body.tickTypes, { session });
+    await session.commitTransaction();
+  } catch (error) {
+    await session.abortTransaction();
+    throw errorTable.createDBFailError("ticketType");
+  } finally {
+    session.endSession();
+  }
 
   const ticketTypeIds = ticketTypes.map((ticketType) => ticketType._id);
 
@@ -59,15 +76,34 @@ export const createMany = catchAsync(async (req, res, next) => {
 
 export const updateMany = catchAsync(async (req, res, next) => {
   let features;
-  const updatas = [];
+  let updatAs = [];
+  const activityId = req.body.activityId;
+  const tickTypeIds = req.body.tickTypes.map((el) => el.id);
 
+  // 1) Convert datetime
+  req.body.tickTypes.forEach((tickType) => {
+    tickType.startAt = helper.toLocalTime(tickType.startAt);
+    tickType.endAt = helper.toLocalTime(tickType.endAt);
+  });
+
+  // 2) Update database
   const session = await mongoose.startSession();
   session.startTransaction();
 
-  //更新
-  await Promise.all(
+  // Delete
+  const filter = {
+    activityId,
+    deletedAt: null,
+    _id: { $nin: tickTypeIds },
+  };
+  const update = { $set: { deletedAt: Date.now() } };
+  const options = { session: session };
+  await TicketType.updateMany(filter, update, options);
+
+  // 更新
+  updatAs = await Promise.all(
     req.body.tickTypes.map(async (data) => {
-      const filter = { activityId: data.activityId, _id: data.id };
+      const filter = { activityId, _id: data.id };
       const update = { $set: data };
       const options = { new: true, runValidators: true, session: session };
       const updatedDoc = await TicketType.findOneAndUpdate(
@@ -77,9 +113,9 @@ export const updateMany = catchAsync(async (req, res, next) => {
       );
 
       features = new queryFeatures(updatedDoc, req.query);
-      updatas.push(await features.query);
-
-      if (!updatas) throw errorTable.idNotFoundError();
+      const outputData = await features.query;
+      if (!outputData) throw errorTable.idNotFoundError();
+      return outputData;
     })
   );
 
@@ -88,7 +124,7 @@ export const updateMany = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
-    message: helper.removeDocsObjId(updatas),
+    data: helper.removeDocsObjId(updatAs),
   });
 });
 

@@ -20,17 +20,16 @@ router
     authControllers.authToken,
     ticketTypeController.checkOwner,
     ticketTypeController.deleteMany
-  );
-
-
-
-router
-  .route("/:id")
-  .get(factory.getOne(TicketType))
-  .patch(
+  )
+  .put(
     authControllers.authToken,
     ticketTypeController.checkOwner,
     ticketTypeController.updateMany
   );
+
+router
+  .route("/:id")
+  .get(factory.getOne(TicketType));
+ 
 
 export default router;
