@@ -45,24 +45,24 @@ const ticketTypeSchema = new mongoose.Schema(
         "total should only contain number",
       ],
     },
-    startAt: {
+    saleStartAt: {
       type: Date,
-      required: [true, "An ticke type should has a start date"],
+      required: [true, "A ticke type should has a sale start date"],
       validate: [
         function (val) {
           return val > Date.now();
         },
-        "Start date should be in the future",
+        "Sale start date should be in the future",
       ],
     },
-    endAt: {
+    saleEndAt: {
       type: Date,
-      required: [true, "An ticke type should has an end date"],
+      required: [true, "A ticke type should has a sale end date"],
       validate: [
         function (val) {
           return val > Date.now();
         },
-        "End date should be in the future",
+        "Sale end date should be in the future",
       ],
     },
     deletedAt: { type: Date, select: false },

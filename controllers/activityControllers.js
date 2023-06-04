@@ -45,7 +45,7 @@ export const createOne = catchAsync(async (req, res, next) => {
     session: session,
   });
   req.body.settingId = setting[0]._id;
-  
+
   activity = (await Activity.create([req.body], { session: session }))[0];
 
   await session.commitTransaction();
@@ -58,7 +58,7 @@ export const createOne = catchAsync(async (req, res, next) => {
 });
 
 export const updateOne = catchAsync(async (req, res, next) => {
-  let venue, setting, features, data;
+  let venue, features, data;
 
   // 1) Conver datetime
   if (req.body.startAt) req.body.startAt = helper.toLocalTime(req.body.startAt);
@@ -89,7 +89,7 @@ export const updateOne = catchAsync(async (req, res, next) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
-  setting = await ActivitySetting.create([req.body.setting], {
+  await ActivitySetting.create([req.body.setting], {
     session: session,
   });
 
