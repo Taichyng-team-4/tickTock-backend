@@ -1,9 +1,6 @@
-import mongoose from "mongoose";
 import catchAsync from "../utils/error/catchAsync.js";
 import queryFeatures from "../utils/helper/queryFeatures.js";
 import * as helper from "../utils/helper/helper.js";
-import Activity from "../models/activity.js";
-import Org from "../models/org.js";
 import * as errorTable from "../utils/error/errorTable.js";
 
 
@@ -26,7 +23,7 @@ export const createOne = (Model) =>
 export const updateOne = (Model) => catchAsync(async (req, res, next) => {
 
   
-  const noticeId = req.params.newId;
+  const noticeId = req.params.noticeId;
   // 找到該活動消息
   const notice = await Model.findById(noticeId);
   // 如果活動消息不存在，拋出 ID 未找到的錯誤
@@ -57,7 +54,7 @@ export const updateOne = (Model) => catchAsync(async (req, res, next) => {
 
 export const deleteOne = (Model) => catchAsync(async (req, res, next) => {
   
-  const noticeId = req.params.newId;
+  const noticeId = req.params.noticeId;
   const notice = await Model.findById(noticeId);
   if (!notice) {
     throw errorTable.targetNotFindError("noticeId");
@@ -68,7 +65,7 @@ export const deleteOne = (Model) => catchAsync(async (req, res, next) => {
   }
 
   await Model.findByIdAndUpdate(
-    req.params.newId,
+    req.params.noticeId,
     { deletedAt: Date.now() },
   );
 

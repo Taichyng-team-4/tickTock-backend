@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "uuid";
+
 export const removeDocKeys = (obj, keys) =>
   obj.toObject({
     transform: (doc, ret) => {
@@ -56,3 +58,8 @@ export const removeFieldsId = (obj, fields) =>
     }
     return acc;
   }, {});
+
+export const generateTicketNumber = () => {
+  const ticketNumber = uuidv4().replace(/-/g, "").substring(0, 8).toUpperCase();
+  return ticketNumber;
+};

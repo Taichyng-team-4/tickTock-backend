@@ -13,8 +13,8 @@ router.route("/")
       .post(systemNoticeControllers.createOne(SystemNotice));
 router
       .get("/:id", factory.getOne(SystemNotice))
-      .patch("/:newId", systemNoticeControllers.updateOne(SystemNotice))
-      .delete("/:newId", systemNoticeControllers.deleteOne(SystemNotice));
+      .patch("/:noticeId", systemNoticeControllers.updateOne(SystemNotice))
+      .delete("/:noticeId", systemNoticeControllers.deleteOne(SystemNotice));
 
 
 export default router;
