@@ -119,6 +119,9 @@ export const targetNotFindError = (target) =>
 export const createDBFailError = (target) =>
   new AppError(`${target} create fail.`, 500, "F10010001");
 
+export const upateDBFailError = (target) =>
+  new AppError(`${target} create fail.`, 500, "F10010001");
+
 export const targetExists = (target) =>
   new AppError(`${target} already exists.`, 400, "C10010003");
 

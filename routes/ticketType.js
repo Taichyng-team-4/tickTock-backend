@@ -4,7 +4,7 @@ import TicketType from "../models/ticketType.js";
 import * as factory from "../controllers/factory.js";
 import * as authControllers from "../controllers/authControllers.js";
 import * as shareControllers from "../controllers/shareControllers.js";
-import * as ticketTypeController from "../controllers/ticketTypeControllers.js";
+import * as ticketTypeControllers from "../controllers/ticketTypeControllers.js";
 import * as ticketListControllers from "../controllers/ticketListControllers.js";
 
 const router = express.Router({ mergeParams: true });
@@ -13,7 +13,7 @@ router.get("/", factory.getAll(TicketType));
 
 router.get("/:id", factory.getOne(TicketType));
 
-router.use(authControllers.authToken, ticketTypeController.checkOwner);
+router.use(authControllers.authToken, ticketTypeControllers.checkOwner);
 
 router
   .route("/")
@@ -26,11 +26,11 @@ router
       body("tickTypes.*.saleEndAt").notEmpty(),
     ],
     shareControllers.validation,
-    ticketTypeController.createMany,
+    ticketTypeControllers.createMany,
     ticketListControllers.createTicketList
   )
   .put(
-    ticketTypeController.checkUpdateOrCreate,
+    ticketTypeControllers.createUpdateTicketTypeInfo,
     [
       body("createTickTypes.*.name").notEmpty(),
       body("createTickTypes.*.zone").notEmpty(),
@@ -39,8 +39,8 @@ router
       body("createTickTypes.*.saleEndAt").notEmpty(),
     ],
     shareControllers.validation,
-    ticketTypeController.updateMany
+    ticketTypeControllers.updateMany
   )
-  .delete(ticketTypeController.deleteMany);
+  .delete(ticketTypeControllers.deleteMany);
 
 export default router;

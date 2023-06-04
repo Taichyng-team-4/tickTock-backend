@@ -5,7 +5,7 @@ import * as helper from "../utils/helper/helper.js";
 import * as errorTable from "../utils/error/errorTable.js";
 import Org from "../models/org.js";
 import Activity from "../models/activity.js";
-import queryFeatures from "../utils/helper/queryFeatures.js";
+import * as ticketTypeHelper from "../utils/helper/ticketType.js";
 
 export const setActivityId = catchAsync(async (req, res, next) => {
   req.body = { ...req.body, activityId: req.params.activityId };
@@ -39,21 +39,24 @@ export const createMany = catchAsync(async (req, res, next) => {
   let ticketTypes, ticketTypeIds;
   const activityId = req.body.activityId;
 
-  if (!(req.body.tickTypes && Array.isArray(req.body.tickTypes)))
-    errorTable.validateError("tickTypes");
+  if (!(req.body.ticketTypes && Array.isArray(req.body.ticketTypes)))
+    errorTable.validateError("ticketTypes");
 
-  //確認資料多筆，在每個 tickType 中加入 activityId
-  req.body.tickTypes.forEach((tickType) => {
-    tickType.activityId = activityId;
-    tickType.saleStartAt = helper.toLocalTime(tickType.saleStartAt);
-    tickType.saleEndAt = helper.toLocalTime(tickType.saleEndAt);
+  //確認資料多筆，在每個 ticketType 中加入 activityId
+  req.body.ticketTypes = ticketTypeHelper.ticketTypeAddActivityId(
+    req.body.ticketTypes,
+    activityId
+  );
+  req.body.ticketTypes.forEach((ticketType) => {
+    ticketType.saleStartAt = helper.toLocalTime(ticketType.saleStartAt);
+    ticketType.saleEndAt = helper.toLocalTime(ticketType.saleEndAt);
   });
 
   //創造ticketType
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    ticketTypes = await TicketType.create(req.body.tickTypes, { session });
+    ticketTypes = await TicketType.create(req.body.ticketTypes, { session });
     ticketTypeIds = ticketTypes.map((ticketType) => ticketType._id);
     await Activity.findByIdAndUpdate(
       activityId,
@@ -66,7 +69,6 @@ export const createMany = catchAsync(async (req, res, next) => {
     );
     await session.commitTransaction();
   } catch (error) {
-    console.log(error);
     await session.abortTransaction();
     throw errorTable.createDBFailError("ticketType");
   } finally {
@@ -83,75 +85,47 @@ export const createMany = catchAsync(async (req, res, next) => {
   });
 });
 
-export const checkUpdateOrCreate = catchAsync(async (req, res, next) => {
-  req.body.updateTickTypes = req.body.tickTypes.filter((el) => !!el.id);
-  req.body.createTickTypes = req.body.tickTypes
-    .filter((el) => !el.id)
-    .map((tickType) => ({
-      ...tickType,
-      activityId: req.body.activityId,
-      saleStartAt: helper.toLocalTime(tickType.saleStartAt),
-      saleEndAt: helper.toLocalTime(tickType.saleEndAt),
-    }));
-
+export const createUpdateTicketTypeInfo = catchAsync(async (req, res, next) => {
+  if (req.body.ticketTypes) {
+    req.body.updateTicketTypes = req.body.ticketTypes.filter((el) => !!el.id);
+    req.body.createTicketTypes = req.body.ticketTypes
+      .filter((el) => !el.id)
+      .map((ticketType) => ({
+        ...ticketType,
+        activityId: req.body.activityId,
+        saleStartAt: helper.toLocalTime(ticketType.saleStartAt),
+        saleEndAt: helper.toLocalTime(ticketType.saleEndAt),
+      }));
+  }
   next();
 });
 
 export const updateMany = catchAsync(async (req, res, next) => {
-  let features;
-  let finalResult = [];
-  const activityId = req.body.activityId;
-  const updateTickTypeIds = req.body.updateTickTypes.map((el) => el.id);
-
   // 1) Convert datetime
-  req.body.tickTypes.forEach((tickType) => {
-    if (tickType.saleStartAt)
-      tickType.saleStartAt = helper.toLocalTime(tickType.saleStartAt);
-    if (tickType.saleEndAt)
-      tickType.saleEndAt = helper.toLocalTime(tickType.saleEndAt);
+  req.body.ticketTypes.forEach((ticketType) => {
+    if (ticketType.saleStartAt)
+      ticketType.saleStartAt = helper.toLocalTime(ticketType.saleStartAt);
+    if (ticketType.saleEndAt)
+      ticketType.saleEndAt = helper.toLocalTime(ticketType.saleEndAt);
   });
 
   // 2) Update database
   const session = await mongoose.startSession();
   session.startTransaction();
 
-  // 3) Delete the ticketType that does not provided list but exist
-  const filter = {
-    activityId,
-    deletedAt: null,
-    _id: { $nin: updateTickTypeIds },
-  };
-  const update = { $set: { deletedAt: Date.now() } };
-  const options = { session: session };
-  await TicketType.updateMany(filter, update, options);
-
-  // 4) Update the ticketType which exist before
-  finalResult = await Promise.all(
-    req.body.updateTickTypes.map(async (data) => {
-      const filter = { activityId, _id: data.id };
-      const update = { $set: helper.removeObjKeys(data, ["id"]) };
-      const options = { new: true, runValidators: true, session: session };
-
-      const updatedDoc = TicketType.findOneAndUpdate(filter, update, options);
-
-      features = new queryFeatures(updatedDoc, req.query);
-      const outputData = await features.query;
-      if (!outputData) throw errorTable.idNotFoundError();
-      return outputData;
-    })
+  const ticketTypes = await ticketTypeHelper.updateTicketTypes(
+    {
+      activityId: req.body.activityId,
+      updateQuery: req.body.updateTicketTypes,
+      createQuery: req.body.createTicketTypes,
+    },
+    session
   );
-
-  // 5) Create the ticketType which not exist
-  const createTicketTypes = await TicketType.create(req.body.createTickTypes, {
-    session,
-  });
-
-  finalResult = [...finalResult, ...createTicketTypes];
-  const finalResultIds = finalResult.map((el) => el.id);
+  const ticketTypeIds = ticketTypes.map((el) => el.id);
 
   await Activity.findByIdAndUpdate(
     req.body.activityId,
-    { ticketTypeIds: finalResultIds },
+    { ticketTypeIds },
     { session }
   );
 
@@ -160,7 +134,7 @@ export const updateMany = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
-    data: helper.removeDocsObjId(finalResult),
+    data: helper.removeDocsObjId(ticketTypes),
   });
 });
 
@@ -170,7 +144,7 @@ export const deleteMany = catchAsync(async (req, res, next) => {
   session.startTransaction();
 
   await Promise.all(
-    req.body.tickTypeIds.map(async (id) => {
+    req.body.ticketTypeIds.map(async (id) => {
       const update = { deletedAt: Date.now() };
       const options = { session: session };
       await TicketType.findByIdAndUpdate(id, update, options);
@@ -180,7 +154,7 @@ export const deleteMany = catchAsync(async (req, res, next) => {
   await Activity.findByIdAndUpdate(
     req.body.activityId,
     {
-      $pull: { ticketTypeIds: { $in: req.body.tickTypeIds } },
+      $pull: { ticketTypeIds: { $in: req.body.ticketTypeIds } },
     },
     { session }
   );
