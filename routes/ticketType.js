@@ -29,7 +29,6 @@ router
     ],
     shareControllers.validation,
     ticketTypeControllers.createMany,
-    ticketListControllers.createMany
   )
   .put(
     ticketTypeControllers.createUpdateTicketTypeInfo,

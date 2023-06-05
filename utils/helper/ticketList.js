@@ -4,6 +4,17 @@ import * as ticketListHelper from "./ticketList.js";
 import TicketList from "../../models/ticketList.js";
 import * as errorTable from "../error/errorTable.js";
 
+export const createTicketList = async (
+  { activityId, ticketTypes },
+  session
+) => {
+  const ticketListData = ticketListHelper.generateTicketListFromTicketTypes(
+    activityId,
+    ticketTypes
+  );
+  return TicketList.create(ticketListData, { session });
+};
+
 export const updateTicketLists = async (
   { activityId, ticketTypes },
   session

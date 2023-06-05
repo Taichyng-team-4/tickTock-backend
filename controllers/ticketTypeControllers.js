@@ -1,10 +1,12 @@
 import mongoose from "mongoose";
-import catchAsync from "../utils/error/catchAsync.js";
-import TicketType from "../models/ticketType.js";
-import * as helper from "../utils/helper/helper.js";
-import * as errorTable from "../utils/error/errorTable.js";
 import Activity from "../models/activity.js";
+import TicketType from "../models/ticketType.js";
+import TicketList from "../models/ticketList.js";
+import * as helper from "../utils/helper/helper.js";
+import catchAsync from "../utils/error/catchAsync.js";
+import * as errorTable from "../utils/error/errorTable.js";
 import * as ticketTypeHelper from "../utils/helper/ticketType.js";
+import * as ticketListHelper from "../utils/helper/ticketList.js";
 
 export const createMany = catchAsync(async (req, res, next) => {
   let ticketTypes, ticketTypeIds;
@@ -27,8 +29,17 @@ export const createMany = catchAsync(async (req, res, next) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
+    // 1) create ticket type
     ticketTypes = await TicketType.create(req.body.ticketTypes, { session });
     ticketTypeIds = ticketTypes.map((ticketType) => ticketType._id);
+
+    // 2) create ticket lists
+    await ticketListHelper.createTicketList(
+      { activityId, ticketTypes },
+      session
+    );
+
+    // 3) update activity
     await Activity.findByIdAndUpdate(
       activityId,
       { ticketTypeIds },
@@ -83,25 +94,38 @@ export const updateMany = catchAsync(async (req, res, next) => {
   // 2) Update database
   const session = await mongoose.startSession();
   session.startTransaction();
+  try {
+    // 1) update ticket type
+    const ticketTypes = await ticketTypeHelper.updateTicketTypes(
+      {
+        activityId: req.body.activityId,
+        updateQuery: req.body.updateTicketTypes,
+        createQuery: req.body.createTicketTypes,
+      },
+      session
+    );
 
-  const ticketTypes = await ticketTypeHelper.updateTicketTypes(
-    {
-      activityId: req.body.activityId,
-      updateQuery: req.body.updateTicketTypes,
-      createQuery: req.body.createTicketTypes,
-    },
-    session
-  );
-  const ticketTypeIds = ticketTypes.map((el) => el.id);
+    // 2) update ticket list
+    await ticketListHelper.updateTicketLists(
+      { activityId: req.body.activityId, ticketTypes },
+      session
+    );
 
-  await Activity.findByIdAndUpdate(
-    req.body.activityId,
-    { ticketTypeIds },
-    { session }
-  );
+    const ticketTypeIds = ticketTypes.map((el) => el.id);
 
-  await session.commitTransaction();
-  session.endSession();
+    // 3) update activity
+    await Activity.findByIdAndUpdate(
+      req.body.activityId,
+      { ticketTypeIds },
+      { session }
+    );
+    await session.commitTransaction();
+  } catch (err) {
+    await session.abortTransaction();
+    throw errorTable.upateDBFailError("ticketType");
+  } finally {
+    session.endSession();
+  }
 
   res.status(200).json({
     status: "success",
@@ -113,25 +137,38 @@ export const deleteMany = catchAsync(async (req, res, next) => {
   //Update ticketType
   const session = await mongoose.startSession();
   session.startTransaction();
+  try {
+    // 1) delete ticket type
+    await Promise.all(
+      req.body.ticketTypeIds.map(async (id) => {
+        const update = { deletedAt: Date.now() };
+        const options = { session: session };
+        await TicketType.findByIdAndUpdate(id, update, options);
+      })
+    );
+    
+    // 2) delete ticket type
+    await TicketList.updateMany(
+      { activityId: req.body.activityId, deletedAt: null, ticketId: null },
+      { $set: { deletedAt: Date.now() } },
+      { session }
+    );
 
-  await Promise.all(
-    req.body.ticketTypeIds.map(async (id) => {
-      const update = { deletedAt: Date.now() };
-      const options = { session: session };
-      await TicketType.findByIdAndUpdate(id, update, options);
-    })
-  );
-
-  await Activity.findByIdAndUpdate(
-    req.body.activityId,
-    {
-      $pull: { ticketTypeIds: { $in: req.body.ticketTypeIds } },
-    },
-    { session }
-  );
-
-  await session.commitTransaction();
-  session.endSession();
+    // 3) delete activity
+    await Activity.findByIdAndUpdate(
+      req.body.activityId,
+      {
+        $pull: { ticketTypeIds: { $in: req.body.ticketTypeIds } },
+      },
+      { session }
+    );
+    await session.commitTransaction();
+  } catch (err) {
+    await session.abortTransaction();
+    throw errorTable.upateDBFailError("activity");
+  } finally {
+    session.endSession();
+  }
 
   res.status(204).json({});
 });

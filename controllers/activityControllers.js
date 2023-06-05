@@ -104,11 +104,11 @@ export const createOne = catchAsync(async (req, res, next) => {
       );
 
       // 5) create ticketLists
-      const ticketListData = ticketListHelper.generateTicketListFromTicketTypes(
-        activity.id,
-        ticketTypes
+
+      await ticketListHelper.createTicketList(
+        { activityId: activity.id, ticketTypes },
+        session
       );
-      await TicketList.create(ticketListData, { session });
     }
 
     await session.commitTransaction();

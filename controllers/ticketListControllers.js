@@ -19,14 +19,11 @@ export const createMany = catchAsync(async (req, res, next) => {
   const isCreated = await TicketList.findOne({ activityId });
   if (!!isCreated) throw errorTable.alreadyCreatedError("TicketList");
 
-  // 3) Construct the ticket list query
-  const ticketListData = ticketListHelper.generateTicketListFromTicketTypes(
-    req.body.activityId,
-    ticketTypes
+  // 3) Create Ticket List
+  resultData = await ticketListHelper.createTicketList(
+    { activityId: req.body.activityId, ticketTypes },
+    session
   );
-
-  // 4) Create Ticket List
-  resultData = await TicketList.create(ticketListData);
 
   res.status(200).json({
     status: "success",
