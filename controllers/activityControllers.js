@@ -5,11 +5,44 @@ import Venue from "../models/venue.js";
 import Activity from "../models/activity.js";
 import ActivitySetting from "../models/activitySetting.js";
 import * as helper from "../utils/helper/helper.js";
+import * as ticketTypeHelper from "../utils/helper/ticketType.js";
 import * as errorTable from "../utils/error/errorTable.js";
 import queryFeatures from "../utils/helper/queryFeatures.js";
+import TicketType from "../models/ticketType.js";
+
+export const setActivityId = catchAsync(async (req, res, next) => {
+  const activityId = req.params.activityId
+    ? req.params.activityId
+    : req.params.id;
+  req.body = { ...req.body, activityId };
+  next();
+});
+
+export const checkOwner = catchAsync(async (req, res, next) => {
+  // 1) Check activityId
+  const activityId = req.body.activityId;
+  if (!activityId) throw errorTable.targetNotProvideError("activityId");
+
+  // 2) Find activity
+  const activity = await Activity.findById(activityId);
+  if (!activity) throw errorTable.targetNotFindError("Activity");
+
+  // 3) Find org
+  const orgId = activity.orgId.toString();
+  const org = await Org.findById(orgId);
+  if (!(org._id && org.ownerId)) throw errorTable.noPermissionError();
+
+  // 4) Check permission
+  const ownerId = org.ownerId.toString();
+  if (ownerId !== req.user.id) throw errorTable.noPermissionError();
+  req.activityId = activity.id;
+  req.settingId = activity.settingId.toString();
+
+  next();
+});
 
 export const createOne = catchAsync(async (req, res, next) => {
-  let venue, setting, activity;
+  let venue, setting, activity, ticketTypes, ticketTypeIds;
 
   // 1) Conver datetime
   req.body.startAt = helper.toLocalTime(req.body.startAt);
@@ -33,23 +66,48 @@ export const createOne = catchAsync(async (req, res, next) => {
   // 4) Create Activity and its setting
   const session = await mongoose.startSession();
   session.startTransaction();
+  try {
+    // 1) create venue
+    if (req.body.venue) {
+      venue = await Venue.create([req.body.venue], {
+        session,
+      });
+      req.body.venueId = venue[0]._id;
+    }
 
-  if (req.body.venue) {
-    venue = await Venue.create([req.body.venue], {
-      session: session,
+    // 2) create setting
+    setting = await ActivitySetting.create([req.body.setting], {
+      session,
     });
-    req.body.venueId = venue[0]._id;
+    req.body.settingId = setting[0]._id;
+
+    // 3) create activity
+    activity = (await Activity.create([req.body], { session }))[0];
+
+    // 4) create ticketTypes
+    req.body.ticketTypeIds = [];
+    if (req.body.ticketTypes && req.body.ticketTypes.length) {
+      req.body.ticketTypes = helper.addActivityIdtOObjs(
+        req.body.ticketTypes,
+        activity.id
+      );
+      ticketTypes = await TicketType.create(req.body.ticketTypes, {
+        session,
+      });
+      ticketTypeIds = ticketTypes.map((ticketType) => ticketType._id);
+      activity = await Activity.findByIdAndUpdate(
+        activity.id,
+        { ticketTypeIds },
+        { new: true, session }
+      );
+    }
+    await session.commitTransaction();
+  } catch (error) {
+    await session.abortTransaction();
+    throw errorTable.createDBFailError("activity");
+  } finally {
+    session.endSession();
   }
-
-  setting = await ActivitySetting.create([req.body.setting], {
-    session: session,
-  });
-  req.body.settingId = setting[0]._id;
-  
-  activity = (await Activity.create([req.body], { session: session }))[0];
-
-  await session.commitTransaction();
-  session.endSession();
 
   res.status(200).json({
     status: "success",
@@ -58,8 +116,7 @@ export const createOne = catchAsync(async (req, res, next) => {
 });
 
 export const updateOne = catchAsync(async (req, res, next) => {
-  let venue, setting, features, data;
-
+  let venue, features, data;
   // 1) Conver datetime
   if (req.body.startAt) req.body.startAt = helper.toLocalTime(req.body.startAt);
   if (req.body.endAt) req.body.endAt = helper.toLocalTime(req.body.endAt);
@@ -88,35 +145,54 @@ export const updateOne = catchAsync(async (req, res, next) => {
   // 5) Update Activity
   const session = await mongoose.startSession();
   session.startTransaction();
+  try {
+    // 1) Update venue
+    if (req.body.venue) {
+      venue = await Venue.create([req.body.venue], {
+        session: session,
+      });
+      req.body.venueId = venue[0]._id;
+    }
 
-  setting = await ActivitySetting.create([req.body.setting], {
-    session: session,
-  });
+    // 2) Update setting
+    if (req.settingId && req.body.setting) {
+      await ActivitySetting.findByIdAndUpdate(req.settingId, req.body.setting, {
+        new: true,
+        runValidators: true,
+        session: session,
+      });
+    }
 
-  if (req.body.venue) {
-    venue = await Venue.create([req.body.venue], {
+    // 3) Update ticketTypes
+    delete req.body.ticketTypeIds;
+    if (req.body.ticketTypes) {
+      const ticketTypes = await ticketTypeHelper.updateTicketTypes(
+        {
+          activityId: req.params.id,
+          updateQuery: req.body.updateTicketTypes,
+          createQuery: req.body.createTicketTypes,
+        },
+        session
+      );
+      req.body.ticketTypeIds = ticketTypes.map((el) => el.id);
+    }
+
+    // 4) Update activity
+    const activityQuery = Activity.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
       session: session,
     });
-    req.body.venueId = venue[0]._id;
+    features = new queryFeatures(activityQuery, req.query).select();
+    data = await features.query;
+    if (!data) throw errorTable.idNotFoundError();
+    await session.commitTransaction();
+  } catch (err) {
+    await session.abortTransaction();
+    throw errorTable.upateDBFailError("activity");
+  } finally {
+    session.endSession();
   }
-
-  await ActivitySetting.findByIdAndUpdate(req.settingId, req.body.setting, {
-    new: true,
-    runValidators: true,
-    session: session,
-  });
-
-  const activityQuery = Activity.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-    session: session,
-  });
-  features = new queryFeatures(activityQuery, req.query).select();
-  data = await features.query;
-  if (!data) throw errorTable.idNotFoundError();
-
-  await session.commitTransaction();
-  session.endSession();
 
   res.status(200).json({
     status: "success",
@@ -127,38 +203,32 @@ export const updateOne = catchAsync(async (req, res, next) => {
 export const deleteOne = catchAsync(async (req, res, next) => {
   const session = await mongoose.startSession();
   session.startTransaction();
+
+  // 1) Delete activity
   await Activity.findByIdAndUpdate(
     req.params.id,
     { deletedAt: Date.now() },
     { session: session }
   );
+
+  // 2) Delete setting
   await ActivitySetting.findByIdAndUpdate(
     req.settingId,
     { deletedAt: Date.now() },
     { session: session }
   );
+
+  // 3) Delete setting
+  await TicketType.updateMany(
+    { activityId: req.params.id, deletedAt: null },
+    { deletedAt: Date.now() },
+    { session: session }
+  );
+
   await session.commitTransaction();
   session.endSession();
 
   res.status(204).json({});
-});
-
-export const checkOwner = catchAsync(async (req, res, next) => {
-  // 1) Find activity
-  const activity = await Activity.findById(req.params.id);
-  if (!activity) res.status(204).json({});
-
-  // 2) Find org
-  const orgId = activity.orgId.toString();
-  const org = await Org.findById(orgId);
-
-  // 3) Check permission
-  const ownerId = org.ownerId.toString();
-  if (ownerId !== req.user.id) throw errorTable.noPermissionError();
-
-  req.activityId = activity.id;
-  req.settingId = activity.settingId.toString();
-  next();
 });
 
 export const getStatistics = catchAsync((req, res, next) => {

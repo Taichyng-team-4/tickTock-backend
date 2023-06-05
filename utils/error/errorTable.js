@@ -119,6 +119,9 @@ export const targetNotFindError = (target) =>
 export const createDBFailError = (target) =>
   new AppError(`${target} create fail.`, 500, "F10010001");
 
+export const upateDBFailError = (target) =>
+  new AppError(`${target} create fail.`, 500, "F10010001");
+
 export const targetExists = (target) =>
   new AppError(`${target} already exists.`, 400, "C10010003");
 
@@ -127,3 +130,6 @@ export const dBTransactionFailError = () =>
 
 export const inputRelationshipError = (parent, child) =>
   new AppError(`${child} does not belongs to ${parent}.`, 400, "C10020001");
+
+export const alreadyCreatedError = (target) =>
+  new AppError(`${target} has been created.`, 400, "C10010003");

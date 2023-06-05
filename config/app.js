@@ -116,7 +116,7 @@ app.use("/api/v1/activities", activityRouters);
 app.use("/api/v1/venues", venueRouters);
 app.use("/api/v1/settings", settingRouters);
 app.use("/api/v1/ticketTypes",ticketTypeRouters);
-app.use("/api/v1/ticketList",ticketListRouters);
+app.use("/api/v1/ticketLists",ticketListRouters);
 app.use("/api/v1/partners", partnerRouters);
 app.use("/api/v1/faqs", faqRouters);
 app.use("/api/v1", otherRouters);

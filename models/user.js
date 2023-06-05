@@ -65,6 +65,7 @@ const userSchema = new mongoose.Schema(
     area: {
       type: String,
       default: "",
+      select: false,
     },
     googleId: {
       type: String,

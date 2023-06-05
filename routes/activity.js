@@ -2,6 +2,7 @@ import express from "express";
 import { check } from "express-validator";
 import Activity from "../models/activity.js";
 import * as factory from "../controllers/factory.js";
+import ticketListRouter from "../routes/ticketList.js";
 import ticketTypeRouter from "../routes/ticketType.js";
 import * as authControllers from "../controllers/authControllers.js";
 import * as shareControllers from "../controllers/shareControllers.js";
@@ -12,8 +13,14 @@ const router = express.Router();
 
 router.use(
   "/:activityId/ticketTypes",
-  ticketTypeControllers.setActivityId,
+  activityControllers.setActivityId,
   ticketTypeRouter
+);
+
+router.use(
+  "/:activityId/ticketLists",
+  activityControllers.setActivityId,
+  ticketListRouter
 );
 
 router
@@ -37,11 +44,14 @@ router
   .get(factory.getOne(Activity))
   .patch(
     authControllers.authToken,
+    activityControllers.setActivityId,
     activityControllers.checkOwner,
+    ticketTypeControllers.createUpdateTicketTypeInfo,
     activityControllers.updateOne
   )
   .delete(
     authControllers.authToken,
+    activityControllers.setActivityId,
     activityControllers.checkOwner,
     activityControllers.deleteOne
   );

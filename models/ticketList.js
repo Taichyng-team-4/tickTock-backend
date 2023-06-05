@@ -15,7 +15,6 @@ const ticketListSchema = new mongoose.Schema(
     ticketId: {
       type: mongoose.Types.ObjectId,
       ref: "ticket",
-      default: null,
     },
     seatNo: {
       type: String,
@@ -31,9 +30,21 @@ const ticketListSchema = new mongoose.Schema(
   }
 );
 
-ticketListSchema.index({ ticketTypeId: 1, seatNo: 1, deletedAt: 1 }, { unique: true });
+ticketListSchema.index(
+  { ticketTypeId: 1, seatNo: 1, deletedAt: 1 },
+  { unique: true }
+);
 
-ticketListSchema.index({ ticketId: 1, deletedAt: 1 }, { unique: true });
+ticketListSchema.index(
+  { ticketId: 1, deletedAt: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      ticketId: { $exists: true },
+      deletedAt: { $exists: false },
+    },
+  }
+);
 
 ticketListSchema.pre(/^find/, function () {
   if (!(this.$locals && this.$locals.getDeleted))

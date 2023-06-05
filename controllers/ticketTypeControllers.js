@@ -3,57 +3,41 @@ import catchAsync from "../utils/error/catchAsync.js";
 import TicketType from "../models/ticketType.js";
 import * as helper from "../utils/helper/helper.js";
 import * as errorTable from "../utils/error/errorTable.js";
-import Org from "../models/org.js";
 import Activity from "../models/activity.js";
-import queryFeatures from "../utils/helper/queryFeatures.js";
-
-export const setActivityId = catchAsync(async (req, res, next) => {
-  req.body = { ...req.body, activityId: req.params.activityId };
-  req.query.activityId = req.params.activityId;
-  next();
-});
-
-export const checkOwner = catchAsync(
-  async (req, res, next) => {
-    const activityId = req.body.activityId;
-
-    //Check activity
-    if (!activityId) throw errorTable.targetNotProvideError("Activity");
-
-    //Find orgid、ownerId
-    const activity = await Activity.findById(activityId);
-    const orgId = activity.orgId.toString();
-    const result = await Org.findById(orgId);
-
-    if (!result._id || !result.ownerId) throw errorTable.noPermissionError();
-
-    //Check permission
-    const ownerId = result.ownerId.toString();
-    if (ownerId.toString() !== req.user._id.toString())
-      throw errorTable.noPermissionError();
-    next();
-  }
-);
+import * as ticketTypeHelper from "../utils/helper/ticketType.js";
 
 export const createMany = catchAsync(async (req, res, next) => {
-  let ticketTypes;
+  let ticketTypes, ticketTypeIds;
   const activityId = req.body.activityId;
 
-  if (!(req.body.tickTypes && Array.isArray(req.body.tickTypes)))
-    errorTable.validateError("tickTypes");
+  if (!(req.body.ticketTypes && Array.isArray(req.body.ticketTypes)))
+    errorTable.validateError("ticketTypes");
 
-  //確認資料多筆，在每個 tickType 中加入 activityId
-  req.body.tickTypes.forEach((tickType) => {
-    tickType.activityId = activityId;
-    tickType.startAt = helper.toLocalTime(tickType.startAt);
-    tickType.endAt = helper.toLocalTime(tickType.endAt);
+  //確認資料多筆，在每個 ticketType 中加入 activityId
+  req.body.ticketTypes = helper.addActivityIdtOObjs(
+    req.body.ticketTypes,
+    activityId
+  );
+  req.body.ticketTypes.forEach((ticketType) => {
+    ticketType.saleStartAt = helper.toLocalTime(ticketType.saleStartAt);
+    ticketType.saleEndAt = helper.toLocalTime(ticketType.saleEndAt);
   });
 
   //創造ticketType
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    ticketTypes = await TicketType.create(req.body.tickTypes, { session });
+    ticketTypes = await TicketType.create(req.body.ticketTypes, { session });
+    ticketTypeIds = ticketTypes.map((ticketType) => ticketType._id);
+    await Activity.findByIdAndUpdate(
+      activityId,
+      { ticketTypeIds },
+      {
+        new: true,
+        runValidators: true,
+        session,
+      }
+    );
     await session.commitTransaction();
   } catch (error) {
     await session.abortTransaction();
@@ -62,61 +46,58 @@ export const createMany = catchAsync(async (req, res, next) => {
     session.endSession();
   }
 
-  const ticketTypeIds = ticketTypes.map((ticketType) => ticketType._id);
-
   req.body.ticketTypeIds = ticketTypeIds;
 
   const data = ticketTypes.map((obj) => helper.sanitizeCreatedDoc(obj));
+  // next();
+  res.status(200).json({
+    status: "success",
+    data,
+  });
+});
+
+export const createUpdateTicketTypeInfo = catchAsync(async (req, res, next) => {
+  if (req.body.ticketTypes) {
+    req.body.updateTicketTypes = req.body.ticketTypes.filter((el) => !!el.id);
+    req.body.createTicketTypes = req.body.ticketTypes
+      .filter((el) => !el.id)
+      .map((ticketType) => ({
+        ...ticketType,
+        activityId: req.body.activityId,
+        saleStartAt: helper.toLocalTime(ticketType.saleStartAt),
+        saleEndAt: helper.toLocalTime(ticketType.saleEndAt),
+      }));
+  }
   next();
-  // res.status(200).json({
-  //   status: "success",
-  //   data,
-  // });
 });
 
 export const updateMany = catchAsync(async (req, res, next) => {
-  let features;
-  let updatAs = [];
-  const activityId = req.body.activityId;
-  const tickTypeIds = req.body.tickTypes.map((el) => el.id);
-
   // 1) Convert datetime
-  req.body.tickTypes.forEach((tickType) => {
-    tickType.startAt = helper.toLocalTime(tickType.startAt);
-    tickType.endAt = helper.toLocalTime(tickType.endAt);
+  req.body.ticketTypes.forEach((ticketType) => {
+    if (ticketType.saleStartAt)
+      ticketType.saleStartAt = helper.toLocalTime(ticketType.saleStartAt);
+    if (ticketType.saleEndAt)
+      ticketType.saleEndAt = helper.toLocalTime(ticketType.saleEndAt);
   });
 
   // 2) Update database
   const session = await mongoose.startSession();
   session.startTransaction();
 
-  // Delete
-  const filter = {
-    activityId,
-    deletedAt: null,
-    _id: { $nin: tickTypeIds },
-  };
-  const update = { $set: { deletedAt: Date.now() } };
-  const options = { session: session };
-  await TicketType.updateMany(filter, update, options);
+  const ticketTypes = await ticketTypeHelper.updateTicketTypes(
+    {
+      activityId: req.body.activityId,
+      updateQuery: req.body.updateTicketTypes,
+      createQuery: req.body.createTicketTypes,
+    },
+    session
+  );
+  const ticketTypeIds = ticketTypes.map((el) => el.id);
 
-  // 更新
-  updatAs = await Promise.all(
-    req.body.tickTypes.map(async (data) => {
-      const filter = { activityId, _id: data.id };
-      const update = { $set: data };
-      const options = { new: true, runValidators: true, session: session };
-      const updatedDoc = await TicketType.findOneAndUpdate(
-        filter,
-        update,
-        options
-      );
-
-      features = new queryFeatures(updatedDoc, req.query);
-      const outputData = await features.query;
-      if (!outputData) throw errorTable.idNotFoundError();
-      return outputData;
-    })
+  await Activity.findByIdAndUpdate(
+    req.body.activityId,
+    { ticketTypeIds },
+    { session }
   );
 
   await session.commitTransaction();
@@ -124,7 +105,7 @@ export const updateMany = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
-    data: helper.removeDocsObjId(updatAs),
+    data: helper.removeDocsObjId(ticketTypes),
   });
 });
 
@@ -134,12 +115,21 @@ export const deleteMany = catchAsync(async (req, res, next) => {
   session.startTransaction();
 
   await Promise.all(
-    req.body.tickTypeIds.map(async (id) => {
+    req.body.ticketTypeIds.map(async (id) => {
       const update = { deletedAt: Date.now() };
       const options = { session: session };
       await TicketType.findByIdAndUpdate(id, update, options);
     })
   );
+
+  await Activity.findByIdAndUpdate(
+    req.body.activityId,
+    {
+      $pull: { ticketTypeIds: { $in: req.body.ticketTypeIds } },
+    },
+    { session }
+  );
+
   await session.commitTransaction();
   session.endSession();
 

@@ -7,7 +7,7 @@ export const getMe = catchAsync(async (req, res, next) => {
 });
 
 export const getProfile = catchAsync(async (req, res, next) => {
-  req.query.fields = "+email,+name,+gender,+phone,+birth,+avatar";
+  req.query.fields = "+email,+name,+gender,+phone,+birth,+avatar,+area";
   next();
 });
 
