@@ -10,8 +10,14 @@ export const removeDocKeys = (obj, keys) =>
     },
   });
 
-export const sanitizeCreatedDoc = (obj) =>
-  removeDocKeys(obj, ["_id", "__v", "createdAt", "updatedAt"]);
+export const sanitizeCreatedDoc = (obj) => {
+  if (!obj) return {};
+  if (Array.isArray(obj))
+    return obj.map((el) =>
+      removeDocKeys(el, ["_id", "__v", "createdAt", "updatedAt"])
+    );
+  return removeDocKeys(obj, ["_id", "__v", "createdAt", "updatedAt"]);
+};
 
 export const removeDocObjId = (obj) => removeDocKeys(obj, ["_id"]);
 
@@ -59,7 +65,10 @@ export const removeFieldsId = (obj, fields) =>
     return acc;
   }, {});
 
-export const generateTicketNumber = () => {
+export const generateSeatNumber = () => {
   const ticketNumber = uuidv4().replace(/-/g, "").substring(0, 8).toUpperCase();
   return ticketNumber;
 };
+
+export const addActivityIdtOObjs = (objs, activityId) =>
+  objs.map((el) => ({ ...el, activityId }));

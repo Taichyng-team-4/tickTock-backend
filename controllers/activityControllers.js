@@ -87,7 +87,7 @@ export const createOne = catchAsync(async (req, res, next) => {
     // 4) create ticketTypes
     req.body.ticketTypeIds = [];
     if (req.body.ticketTypes && req.body.ticketTypes.length) {
-      req.body.ticketTypes = ticketTypeHelper.ticketTypeAddActivityId(
+      req.body.ticketTypes = helper.addActivityIdtOObjs(
         req.body.ticketTypes,
         activity.id
       );

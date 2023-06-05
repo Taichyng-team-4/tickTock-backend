@@ -2,6 +2,7 @@ import express from "express";
 import { check } from "express-validator";
 import Activity from "../models/activity.js";
 import * as factory from "../controllers/factory.js";
+import ticketListRouter from "../routes/ticketList.js";
 import ticketTypeRouter from "../routes/ticketType.js";
 import * as authControllers from "../controllers/authControllers.js";
 import * as shareControllers from "../controllers/shareControllers.js";
@@ -14,6 +15,12 @@ router.use(
   "/:activityId/ticketTypes",
   activityControllers.setActivityId,
   ticketTypeRouter
+);
+
+router.use(
+  "/:activityId/ticketLists",
+  activityControllers.setActivityId,
+  ticketListRouter
 );
 
 router

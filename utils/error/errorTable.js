@@ -130,3 +130,6 @@ export const dBTransactionFailError = () =>
 
 export const inputRelationshipError = (parent, child) =>
   new AppError(`${child} does not belongs to ${parent}.`, 400, "C10020001");
+
+export const alreadyCreatedError = (target) =>
+  new AppError(`${target} has been created.`, 400, "C10010003");

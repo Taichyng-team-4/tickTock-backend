@@ -2,17 +2,13 @@ import * as helper from "./helper.js";
 import queryFeatures from "./queryFeatures.js";
 import TicketType from "../../models/ticketType.js";
 import * as errorTable from "../error/errorTable.js";
-import * as ticketTypeHelper from "./ticketType.js";
-
-export const ticketTypeAddActivityId = (teticketTypes, activityId) =>
-  teticketTypes.map((el) => ({ ...el, activityId }));
 
 export const updateTicketTypes = async (
   { activityId, updateQuery = [], createQuery = [] },
   session
 ) => {
   const updateTicketTypeIds = updateQuery.map((el) => el.id);
-  const createQueryWithActivityId = ticketTypeHelper.ticketTypeAddActivityId(
+  const createQueryWithActivityId = helper.addActivityIdtOObjs(
     createQuery,
     activityId
   );

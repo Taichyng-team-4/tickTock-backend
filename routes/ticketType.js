@@ -1,11 +1,11 @@
 import express from "express";
 import { body } from "express-validator";
+
 import TicketType from "../models/ticketType.js";
 import * as factory from "../controllers/factory.js";
 import * as authControllers from "../controllers/authControllers.js";
-import * as activityControllers from "../controllers/activityControllers.js";
-
 import * as shareControllers from "../controllers/shareControllers.js";
+import * as activityControllers from "../controllers/activityControllers.js";
 import * as ticketTypeControllers from "../controllers/ticketTypeControllers.js";
 import * as ticketListControllers from "../controllers/ticketListControllers.js";
 
@@ -29,7 +29,7 @@ router
     ],
     shareControllers.validation,
     ticketTypeControllers.createMany,
-    ticketListControllers.createTicketList
+    ticketListControllers.createMany
   )
   .put(
     ticketTypeControllers.createUpdateTicketTypeInfo,
@@ -43,6 +43,6 @@ router
     shareControllers.validation,
     ticketTypeControllers.updateMany
   )
-  .delete(ticketTypeControllers.deleteMany);
+  .delete([body("tickTypeIds").notEmpty()], ticketTypeControllers.deleteMany);
 
 export default router;
