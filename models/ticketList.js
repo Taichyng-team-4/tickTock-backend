@@ -20,6 +20,10 @@ const ticketListSchema = new mongoose.Schema(
       type: String,
       required: [true, "A ticket list should has a seat number"],
     },
+    isTrading: {
+      type: Boolean,
+      default: false,
+    },
     deletedAt: { type: Date, select: false },
     __v: { type: Number, select: false },
   },
@@ -52,8 +56,7 @@ ticketListSchema.pre(/^find/, function () {
 });
 
 ticketListSchema.virtual("isTaken").get(function () {
-  if (!this.ticketId) return false;
-  return true;
+  return !!(this.ticketId || this.isTrading);
 });
 
 const TicketList = mongoose.model("TicketList", ticketListSchema);

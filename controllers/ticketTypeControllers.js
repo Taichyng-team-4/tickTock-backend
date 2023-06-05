@@ -134,7 +134,6 @@ export const updateMany = catchAsync(async (req, res, next) => {
 });
 
 export const deleteMany = catchAsync(async (req, res, next) => {
-  //Update ticketType
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
@@ -146,10 +145,15 @@ export const deleteMany = catchAsync(async (req, res, next) => {
         await TicketType.findByIdAndUpdate(id, update, options);
       })
     );
-    
-    // 2) delete ticket type
+
+    // 2) delete ticket list
     await TicketList.updateMany(
-      { activityId: req.body.activityId, deletedAt: null, ticketId: null },
+      {
+        activityId: req.body.activityId,
+        deletedAt: null,
+        ticketId: null,
+        isTrading: false,
+      },
       { $set: { deletedAt: Date.now() } },
       { session }
     );

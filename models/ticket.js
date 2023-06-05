@@ -18,13 +18,13 @@ const ticketSchema = new mongoose.Schema(
       ref: "TicketType",
       required: [true, "An ticket should has an ticketTypeId"],
     },
-    orderId: {
-      type: mongoose.Types.ObjectId,
-      ref: "Order",
-      required: [true, "An ticket should has an orderId"],
-    },
+    // orderId: {
+    //   type: mongoose.Types.ObjectId,
+    //   ref: "Order",
+    //   required: [true, "An ticket should has an orderId"],
+    // },
     zone: {
-      type: Boolean,
+      type: String,
       required: [true, "A ticket should has a zone"],
       validate: [
         validator.isAlphanumeric,
@@ -32,7 +32,7 @@ const ticketSchema = new mongoose.Schema(
       ],
     },
     seatNo: {
-      type: Boolean,
+      type: String,
       required: [true, "A ticket should has a seat number"],
       validate: [
         validator.isAlphanumeric,
@@ -40,14 +40,18 @@ const ticketSchema = new mongoose.Schema(
       ],
     },
     price: {
-      type: Boolean,
+      type: Number,
       required: [true, "A ticket should has a price when purchase"],
-      validate: [validator.isNumeric, "Price should only contain number"],
+      validate: [
+        (value) => validator.isNumeric(value.toString()),
+        ,
+        "Price should only contain number",
+      ],
     },
-    QRcode: {
-      type: Boolean,
-      required: [true, "A ticket should has its QRcode of the pass"],
-    },
+    // QRcode: {
+    //   type: Boolean,
+    //   required: [true, "A ticket should has its QRcode of the pass"],
+    // },
     startAt: {
       type: Date,
       required: [true, "A ticket should mark the activity start date"],
@@ -58,7 +62,6 @@ const ticketSchema = new mongoose.Schema(
     },
     refundedAt: {
       type: Date,
-      default: null,
     },
     deletedAt: { type: Date, select: false },
     __v: { type: Number, select: false },
@@ -69,6 +72,18 @@ const ticketSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+ticketSchema.index(
+  { activityId: 1, zone: 1, seatNo: 1, refundedAt: 1, deletedAt: 1 },
+  { unique: true }
+);
+
+// ticketSchema.index({ QRcode: 1, deletedAt: 1 }, { unique: true });
+
+ticketSchema.pre(/^find/, function () {
+  if (!(this.$locals && this.$locals.getDeleted))
+    this.where({ deletedAt: null });
+});
 
 ticketSchema.virtual("isStart").get(function () {
   return this.startAt < Date.now();

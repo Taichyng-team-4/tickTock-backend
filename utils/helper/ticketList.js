@@ -56,6 +56,7 @@ export const updateTicketLists = async (
     activityId,
     deletedAt: null,
     ticketId: null,
+    isTrading: false,
     ticketTypeId: { $nin: ticketTypesId },
   };
 
@@ -110,16 +111,18 @@ export const updateTicketLists = async (
         activityId,
         ticketTypeId: ticketType.id,
         deletedAt: null,
+        isTrading: false,
         ticketId: null,
       }).limit(ticketType.minus);
       const ids = ticketLists.map((el) => el.id);
       await TicketList.updateMany(
         {
+          _id: { $in: ids },
           activityId,
           ticketTypeId: ticketType.id,
           deletedAt: null,
           ticketId: null,
-          _id: { $in: ids },
+          isTrading: false,
         },
         { $set: { deletedAt: Date.now() } },
         { session }

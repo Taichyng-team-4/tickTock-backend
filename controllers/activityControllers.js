@@ -113,7 +113,6 @@ export const createOne = catchAsync(async (req, res, next) => {
 
     await session.commitTransaction();
   } catch (error) {
-    console.log(error);
     await session.abortTransaction();
     throw errorTable.createDBFailError("activity");
   } finally {
@@ -246,7 +245,12 @@ export const deleteOne = catchAsync(async (req, res, next) => {
 
   // 3) Delete ticket list
   await TicketList.updateMany(
-    { activityId: req.params.id, deletedAt: null, ticketId: null },
+    {
+      activityId: req.params.id,
+      deletedAt: null,
+      ticketId: null,
+      isTrading: false,
+    },
     { $set: { deletedAt: Date.now() } },
     { session }
   );

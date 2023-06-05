@@ -133,3 +133,9 @@ export const inputRelationshipError = (parent, child) =>
 
 export const alreadyCreatedError = (target) =>
   new AppError(`${target} has been created.`, 400, "C10010003");
+
+export const tradingFailError = () =>
+  new AppError("Trading ticket fail error.", 500, "F10010001");
+
+export const notSaleDurationError = () =>
+  new AppError("Not for sale duration.", 400, "C10010003");
