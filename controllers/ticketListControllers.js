@@ -19,14 +19,11 @@ export const createMany = catchAsync(async (req, res, next) => {
   const isCreated = await TicketList.findOne({ activityId });
   if (!!isCreated) throw errorTable.alreadyCreatedError("TicketList");
 
-  // 3) Construct the ticket list query
-  const ticketListData = ticketListHelper.generateTicketListFromTicketTypes(
-    req.body.activityId,
-    ticketTypes
-  );
-
-  // 4) Create Ticket List
-  resultData = await TicketList.create(ticketListData);
+  // 3) Create Ticket List
+  resultData = await ticketListHelper.createTicketList({
+    activityId: req.body.activityId,
+    ticketTypes,
+  });
 
   res.status(200).json({
     status: "success",
@@ -67,7 +64,7 @@ export const updateMany = catchAsync(async (req, res, next) => {
 
 export const deleteMany = catchAsync(async (req, res, next) => {
   await TicketList.updateMany(
-    { activityId, deletedAt: null, ticketId: null },
+    { activityId, deletedAt: null, ticketId: null, isTrading: false },
     { $set: { deletedAt: Date.now() } }
   );
 

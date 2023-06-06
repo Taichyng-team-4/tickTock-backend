@@ -1,9 +1,9 @@
 import express from "express";
 import Ticket from "../models/ticket.js";
-import { check } from "express-validator";
+import { body } from "express-validator";
 import * as factory from "../controllers/factory.js";
 
-import * as ticketController from "../controllers/ticketControllers.js";
+import * as ticketControllers from "../controllers/ticketControllers.js";
 import * as shareControllers from "../controllers/shareControllers.js";
 import * as authControllers from "../controllers/authControllers.js";
 
@@ -16,17 +16,25 @@ router
   .get(factory.getAll(Ticket))
   .post(
     [
-      check("activityId").notEmpty(),
-      check("ticketTypeId").notEmpty(),
+      body("tickets").notEmpty(),
+      body("tickets.*.ticketTypeId").notEmpty(),
+      body("tickets.*.amount").notEmpty(),
     ],
     shareControllers.validation,
-    ticketController.createOne
+    ticketControllers.createMany
+  )
+  .delete(
+    [body("ticketIds").notEmpty()],
+    ticketControllers.checkOwners,
+    ticketControllers.deleteMany
   );
+
+router.route("/me").get(ticketControllers.getMe, factory.getAll(Ticket));
 
 router
   .route("/:id")
-  .get(ticketController.checkOwner, factory.getOne(Ticket))
+  .get(ticketControllers.checkOwner, factory.getOne(Ticket))
   .patch(factory.updateOne(Ticket))
-  .delete(ticketController.checkOwner, factory.deleteOne(Ticket));
+  .delete(ticketControllers.checkOwner, ticketControllers.deleteOne);
 
 export default router;

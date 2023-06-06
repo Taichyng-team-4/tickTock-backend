@@ -3,12 +3,14 @@ import catchAsync from "../utils/error/catchAsync.js";
 import Org from "../models/org.js";
 import Venue from "../models/venue.js";
 import Activity from "../models/activity.js";
-import ActivitySetting from "../models/activitySetting.js";
+import TicketType from "../models/ticketType.js";
 import * as helper from "../utils/helper/helper.js";
-import * as ticketTypeHelper from "../utils/helper/ticketType.js";
+import ActivitySetting from "../models/activitySetting.js";
 import * as errorTable from "../utils/error/errorTable.js";
 import queryFeatures from "../utils/helper/queryFeatures.js";
-import TicketType from "../models/ticketType.js";
+import * as ticketTypeHelper from "../utils/helper/ticketType.js";
+import * as ticketListHelper from "../utils/helper/ticketList.js";
+import TicketList from "../models/ticketList.js";
 
 export const setActivityId = catchAsync(async (req, res, next) => {
   const activityId = req.params.activityId
@@ -100,7 +102,15 @@ export const createOne = catchAsync(async (req, res, next) => {
         { ticketTypeIds },
         { new: true, session }
       );
+
+      // 5) create ticketLists
+
+      await ticketListHelper.createTicketList(
+        { activityId: activity.id, ticketTypes },
+        session
+      );
     }
+
     await session.commitTransaction();
   } catch (error) {
     await session.abortTransaction();
@@ -175,17 +185,25 @@ export const updateOne = catchAsync(async (req, res, next) => {
         session
       );
       req.body.ticketTypeIds = ticketTypes.map((el) => el.id);
+
+      // 4) Update ticketLists
+      await ticketListHelper.updateTicketLists(
+        { activityId: req.params.id, ticketTypes },
+        session
+      );
     }
 
-    // 4) Update activity
+    // 5) Update activity
     const activityQuery = Activity.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
       session: session,
     });
+
     features = new queryFeatures(activityQuery, req.query).select();
     data = await features.query;
     if (!data) throw errorTable.idNotFoundError();
+
     await session.commitTransaction();
   } catch (err) {
     await session.abortTransaction();
@@ -208,21 +226,33 @@ export const deleteOne = catchAsync(async (req, res, next) => {
   await Activity.findByIdAndUpdate(
     req.params.id,
     { deletedAt: Date.now() },
-    { session: session }
+    { session }
   );
 
   // 2) Delete setting
   await ActivitySetting.findByIdAndUpdate(
     req.settingId,
     { deletedAt: Date.now() },
-    { session: session }
+    { session }
   );
 
-  // 3) Delete setting
+  // 3) Delete ticket type
   await TicketType.updateMany(
     { activityId: req.params.id, deletedAt: null },
     { deletedAt: Date.now() },
-    { session: session }
+    { session }
+  );
+
+  // 3) Delete ticket list
+  await TicketList.updateMany(
+    {
+      activityId: req.params.id,
+      deletedAt: null,
+      ticketId: null,
+      isTrading: false,
+    },
+    { $set: { deletedAt: Date.now() } },
+    { session }
   );
 
   await session.commitTransaction();

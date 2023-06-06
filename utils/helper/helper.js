@@ -72,3 +72,11 @@ export const generateSeatNumber = () => {
 
 export const addActivityIdtOObjs = (objs, activityId) =>
   objs.map((el) => ({ ...el, activityId }));
+
+export const checkSameIds = (array) => {
+  const firstId = array[0].id;
+  return array.every((el) => {
+    if (el.id !== firstId) return false;
+    return true;
+  });
+};

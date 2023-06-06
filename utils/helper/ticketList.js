@@ -4,6 +4,17 @@ import * as ticketListHelper from "./ticketList.js";
 import TicketList from "../../models/ticketList.js";
 import * as errorTable from "../error/errorTable.js";
 
+export const createTicketList = async (
+  { activityId, ticketTypes },
+  session
+) => {
+  const ticketListData = ticketListHelper.generateTicketListFromTicketTypes(
+    activityId,
+    ticketTypes
+  );
+  return TicketList.create(ticketListData, { session });
+};
+
 export const updateTicketLists = async (
   { activityId, ticketTypes },
   session
@@ -45,6 +56,7 @@ export const updateTicketLists = async (
     activityId,
     deletedAt: null,
     ticketId: null,
+    isTrading: false,
     ticketTypeId: { $nin: ticketTypesId },
   };
 
@@ -99,16 +111,18 @@ export const updateTicketLists = async (
         activityId,
         ticketTypeId: ticketType.id,
         deletedAt: null,
+        isTrading: false,
         ticketId: null,
       }).limit(ticketType.minus);
       const ids = ticketLists.map((el) => el.id);
       await TicketList.updateMany(
         {
+          _id: { $in: ids },
           activityId,
           ticketTypeId: ticketType.id,
           deletedAt: null,
           ticketId: null,
-          _id: { $in: ids },
+          isTrading: false,
         },
         { $set: { deletedAt: Date.now() } },
         { session }
