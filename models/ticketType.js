@@ -10,7 +10,7 @@ const ticketTypeSchema = new mongoose.Schema(
     },
     name: {
       type: String,
-      require: [true, "A ticket type should has a name"],
+      required: [true, "A ticket type should has a name"],
       minLength: [1, "An ticket type name should longer than 1 characters"],
       maxLength: [
         250,
@@ -19,40 +19,51 @@ const ticketTypeSchema = new mongoose.Schema(
     },
     zone: {
       type: String,
-      require: [true, "A ticket type should has a zone"],
+      required: [true, "A ticket type should has a zone"],
       validate: [
         validator.isAlphanumeric,
         "The zone of ticketType should only contain alphabet or number.",
       ],
     },
-    currency: {
-      type: String,
-      require: [true, "A ticket should has a currency when purchase"],
-      validate: [validator.isAlpha, "Currency should only contain alphabet"],
-    },
     price: {
-      type: Boolean,
-      require: [true, "A ticket should has a price when purchase"],
-      validate: [validator.isNumeric, "Price should only contain number"],
+      type: Number,
+      required: [true, "A ticket should has a price when purchase"],
+      validate: [
+        (value) => validator.isNumeric(value.toString()),
+        "Price should only contain number",
+      ],
     },
     total: {
       type: Number,
-      minLength: [1, "A ticke type should at least provide 1 ticket"],
-      require: [
+      required: [
         true,
         "A ticket type should provide the total number of tickets",
       ],
+      minLength: [1, "A ticke type should at least provide 1 ticket"],
+      validate: [
+        (value) => validator.isNumeric(value.toString()),
+        "total should only contain number",
+      ],
     },
-    remain: {
-      type: Number,
-      minLength: [0, "The reamin ticke should greater than 0"],
+    saleStartAt: {
+      type: Date,
+      required: [true, "A ticke type should has a sale start date"],
       validate: [
         function (val) {
-          return val <= this.total;
+          return val > Date.now();
         },
-        "The remain ticket should not greater than the total ticket number",
+        "Sale start date should be in the future",
       ],
-      default: () => this.total,
+    },
+    saleEndAt: {
+      type: Date,
+      required: [true, "A ticke type should has a sale end date"],
+      validate: [
+        function (val) {
+          return val > Date.now();
+        },
+        "Sale end date should be in the future",
+      ],
     },
     deletedAt: { type: Date, select: false },
     __v: { type: Number, select: false },
@@ -64,6 +75,13 @@ const ticketTypeSchema = new mongoose.Schema(
   }
 );
 
+ticketTypeSchema.index({ activityId: 1, name: 1, deletedAt: 1 }, { unique: true });
+
+ticketTypeSchema.pre(/^find/, function () {
+  if (!(this.$locals && this.$locals.getDeleted))
+    this.where({ deletedAt: null });
+});
+
 const TicketType = mongoose.model("TicketType", ticketTypeSchema);
 
-module.exports = TicketType;
+export default TicketType;

@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "uuid";
+
 export const removeDocKeys = (obj, keys) =>
   obj.toObject({
     transform: (doc, ret) => {
@@ -8,8 +10,14 @@ export const removeDocKeys = (obj, keys) =>
     },
   });
 
-export const sanitizeCreatedDoc = (obj) =>
-  removeDocKeys(obj, ["_id", "__v", "createdAt", "updatedAt"]);
+export const sanitizeCreatedDoc = (obj) => {
+  if (!obj) return {};
+  if (Array.isArray(obj))
+    return obj.map((el) =>
+      removeDocKeys(el, ["_id", "__v", "createdAt", "updatedAt"])
+    );
+  return removeDocKeys(obj, ["_id", "__v", "createdAt", "updatedAt"]);
+};
 
 export const removeDocObjId = (obj) => removeDocKeys(obj, ["_id"]);
 
@@ -24,7 +32,8 @@ export const removeObjKeys = (obj, keysToRemove) =>
 export const replaceMongooseOpt = (obj, validOperators) => {
   const newObj = {};
   Object.entries(obj).forEach(([key, value]) => {
-    if (value && typeof value === "object") {
+    if (!value) return;
+    if (typeof value === "object") {
       const newValue = {};
       Object.keys(value).forEach((operator) => {
         if (validOperators.includes(operator)) {
@@ -32,12 +41,13 @@ export const replaceMongooseOpt = (obj, validOperators) => {
         }
       });
       if (Object.keys(newValue).length) newObj[key] = newValue;
-    }
+    } else if (typeof value === "string") newObj[key] = value;
   });
   return newObj;
 };
 
 export const toUTC = (date) => date.split("/").join("-");
+export const toLocalTime = (date) => date.split("-").join("/");
 
 export const removeId = (e) => {
   if (e.endsWith("Id")) return e.slice(0, -2);
@@ -54,3 +64,11 @@ export const removeFieldsId = (obj, fields) =>
     }
     return acc;
   }, {});
+
+export const generateSeatNumber = () => {
+  const ticketNumber = uuidv4().replace(/-/g, "").substring(0, 8).toUpperCase();
+  return ticketNumber;
+};
+
+export const addActivityIdtOObjs = (objs, activityId) =>
+  objs.map((el) => ({ ...el, activityId }));

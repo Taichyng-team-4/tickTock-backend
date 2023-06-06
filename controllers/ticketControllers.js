@@ -1,115 +1,56 @@
 import catchAsync from "../utils/error/catchAsync.js";
+import * as errorTable from "../utils/error/errorTable.js";
 
-export const getAll = catchAsync((req, res, next) => {
+import Ticket from "../models/ticket.js";
+import Acticity from "../models/activity.js";
+import TicketType from "../models/ticketType.js";
+
+export const checkOwner = catchAsync(async (req, res, next) => {
+  // 1) Find the ticket
+  const ticket = await Ticket.findById(req.params.id);
+  if (!ticket) throw errorTable.idNotFoundError();
+
+  // 2) Check the ticket owner
+  if (ticket.ownerId !== req.user.id) throw errorTable.noPermissionError();
+
+  req.ticket = ticket;
+  next();
+});
+
+export const createOne = catchAsync(async (req, res, next) => {
+  // 1) check the activity exist
+  const activity = await Acticity.findById(req.body.acticityId);
+  if (!activity) throw errorTable.idNotFoundError();
+
+  // 2) check the ticketType
+  const ticketType = await TicketType.findById(req.body.ticketTypeId);
+  if (!ticketType) throw errorTable.idNotFoundError();
+  if (ticketType.activityId !== activity.id)
+    throw errorTable.inputRelationshipError("activity", "tickeType");
+
+  // 3) regist the ticket to the ticket list and get the zone, seatNo, price and qrcode information
+  // 4) create order with cash flow
+
+  // 5) create the ticket and regist to user
+  const ticketData = { ...req.body };
+  const data = await Ticket.create(ticketData);
   res.status(200).json({
     status: "success",
-    code: "200",
-    message: "Get tickets successfully",
-    data: [
-      {
-        ticketId: "643adabe75cf2e2f24a07b03",
-        isRefunded: true,
-        ticketSellDate: "1997-01-01",
-        ticketReturnDate: "1997-01-01",
-        orderId: "643adabe75cf2e2f24a07b03",
-        activity: {
-          activityID: "643adabe75cf2e2f24a07b03",
-          isEnd: false,
-          loc: "No. 45 , City Hall Rd, Xinyi District, Taipei City, 110",
-          activityStartDate: "1997-01-01",
-          activityEndDate: "1997-01-01",
-        },
-        ticketArea: "A",
-        ticketType: "Early bird",
-        ticketSeat: "H5B22",
-        ticketPrice: "NT$123",
-        ticketQrCode: "ticketQrCode",
-      },
-    ],
+    data: helper.sanitizeCreatedDoc(data),
   });
 });
 
-export const getOne = catchAsync((req, res, next) => {
-  res.status(200).json({
-    status: "success",
-    code: "200",
-    message: "Get ticket successfully",
-    data: {
-      ticketId: "643adabe75cf2e2f24a07b03",
-      isRefunded: true,
-      ticketSellDate: "1997-01-01",
-      ticketReturnDate: "1997-01-01",
-      orderId: "643adabe75cf2e2f24a07b03",
-      activity: {
-        activityID: "643adabe75cf2e2f24a07b03",
-        isEnd: false,
-        loc: "No. 45 , City Hall Rd, Xinyi District, Taipei City, 110",
-        activityStartDate: "1997-01-01",
-        activityEndDate: "1997-01-01",
-      },
-      ticketArea: "A",
-      ticketType: "Early bird",
-      ticketSeat: "H5B22",
-      ticketPrice: "NT$123",
-      ticketQrCode: "ticketQrCode",
-    },
-  });
-});
+export const deleteOne = catchAsync(async (req, res, next) => {
+  // 1) check the has refuned before and expired...?
+  if (req.ticket.isRefunded || req.ticke.isExpired)
+    return errorTable.noPermissionError();
 
-export const createOne = catchAsync((req, res, next) => {
-  res.status(201).json({
-    status: "success",
-    code: "200",
-    message: "Get tickets successfully",
-    data: {
-      ticketId: "643adabe75cf2e2f24a07b03",
-      isRefunded: true,
-      ticketSellDate: "1997-01-01",
-      ticketReturnDate: "1997-01-01",
-      orderId: "643adabe75cf2e2f24a07b03",
-      activity: {
-        activityID: "643adabe75cf2e2f24a07b03",
-        isEnd: false,
-        loc: "No. 45 , City Hall Rd, Xinyi District, Taipei City, 110",
-        activityStartDate: "1997-01-01",
-        activityEndDate: "1997-01-01",
-      },
-      ticketArea: "A",
-      ticketType: "Early bird",
-      ticketSeat: "H5B22",
-      ticketPrice: "NT$123",
-      ticketQrCode: "ticketQrCode",
-    },
+  // 3) refund the ticket
+  // 4) check out the ticket from ticketList
+  // 5) update the ticket state
+  await Model.findByIdAndUpdate(req.params.id, {
+    refundedAt: Date.now(),
+    expiredAt: Date.now(),
   });
-});
-
-export const updateOne = catchAsync((req, res, next) => {
-  res.status(200).json({
-    status: "success",
-    code: "200",
-    message: "Get tickets successfully",
-    data: {
-      ticketId: "643adabe75cf2e2f24a07b03",
-      isRefunded: true,
-      ticketSellDate: "1997-01-01",
-      ticketReturnDate: "1997-01-01",
-      orderId: "643adabe75cf2e2f24a07b03",
-      activity: {
-        activityID: "643adabe75cf2e2f24a07b03",
-        isEnd: false,
-        loc: "No. 45 , City Hall Rd, Xinyi District, Taipei City, 110",
-        activityStartDate: "1997-01-01",
-        activityEndDate: "1997-01-01",
-      },
-      ticketArea: "A",
-      ticketType: "Early bird",
-      ticketSeat: "H5B22",
-      ticketPrice: "NT$123",
-      ticketQrCode: "ticketQrCode",
-    },
-  });
-});
-
-export const deleteOne = catchAsync((req, res, next) => {
-  res.status(204).json();
+  res.status(204).json({});
 });

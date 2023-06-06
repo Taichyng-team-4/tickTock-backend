@@ -18,6 +18,16 @@ const activitySchema = new mongoose.Schema(
       ref: "ActivitySetting",
       required: [true, "An activity should has its setting"],
     },
+    ticketTypeIds: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "TicketType",
+      },
+    ],
+    ticketListId: {
+      type: mongoose.Types.ObjectId,
+      ref: "TicketList",
+    },
     category: {
       type: String,
       enum: {

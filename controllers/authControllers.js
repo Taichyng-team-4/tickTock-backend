@@ -45,7 +45,7 @@ export const signup = catchAsync(async (req, res, next) => {
     "passwordConfirm",
   ];
 
-  req.body.birth = helper.toUTC(req.body.birth);
+  req.body.birth = helper.toLocalTime(req.body.birth);
   const santalizeResponse = authHelper.santalize(req.body, requireFields);
 
   // 2) Create email verification secret and token

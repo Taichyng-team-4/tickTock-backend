@@ -14,13 +14,11 @@ const ticketListSchema = new mongoose.Schema(
     },
     ticketId: {
       type: mongoose.Types.ObjectId,
-      ref: "Ticket",
-      required: [true, "An ticket list should has an ticketId"],
+      ref: "ticket",
     },
     seatNo: {
       type: String,
-      require: [true, "A ticket list should has a seat number"],
-      unique: false,
+      required: [true, "A ticket list should has a seat number"],
     },
     deletedAt: { type: Date, select: false },
     __v: { type: Number, select: false },
@@ -32,8 +30,32 @@ const ticketListSchema = new mongoose.Schema(
   }
 );
 
-ticketListSchema.index({ ticketTypeId: 1, seatNo: 1 }, { unique: true });
+ticketListSchema.index(
+  { ticketTypeId: 1, seatNo: 1, deletedAt: 1 },
+  { unique: true }
+);
+
+ticketListSchema.index(
+  { ticketId: 1, deletedAt: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      ticketId: { $exists: true },
+      deletedAt: { $exists: false },
+    },
+  }
+);
+
+ticketListSchema.pre(/^find/, function () {
+  if (!(this.$locals && this.$locals.getDeleted))
+    this.where({ deletedAt: null });
+});
+
+ticketListSchema.virtual("isTaken").get(function () {
+  if (!this.ticketId) return false;
+  return true;
+});
 
 const TicketList = mongoose.model("TicketList", ticketListSchema);
 
-module.exports = TicketList;
+export default TicketList;

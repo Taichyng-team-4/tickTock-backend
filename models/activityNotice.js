@@ -9,19 +9,25 @@ const activityNoticeSchema = new mongoose.Schema(
     },
     title: {
       type: String,
-      require: [true, "An activity notice should has a title"],
+      required: [true, "An activity notice should has a title"],
     },
     content: {
       type: String,
-      require: [true, "An activity notice should has a content"],
+      required: [true, "An activity notice should has a content"],
     },
     publishAt: {
       type: Date,
-      require: [true, "An activity notice should has a release date"],
+      required: [true, "An activity notice should has a release date"],
     },
     expiredAt: {
       type: Date,
-      require: [true, "An activity notice should has a expiration date"],
+      required: [true, "An activity notice should has a expiration date"],
+      validate: [
+        function (val) {
+          return val >= this.publishAt;
+        },
+        "Expiration date should expirate after publish",
+      ],
     },
     deletedAt: { type: Date, select: false },
     __v: { type: Number, select: false },
@@ -33,14 +39,19 @@ const activityNoticeSchema = new mongoose.Schema(
   }
 );
 
-activityNoticeSchema
-  .virtual("isPublished")
-  .get(() => this.publishAt < Date.now());
-  
-activityNoticeSchema
-  .virtual("isExpired")
-  .get(() => this.expiredAt > Date.now());
+activityNoticeSchema.pre(/^find/, function () {
+  if (!(this.$locals && this.$locals.getDeleted))
+    this.where({ deletedAt: null });
+});
+
+activityNoticeSchema.virtual("isPublished").get(function () {
+  return this.publishAt < Date.now();
+});
+
+activityNoticeSchema.virtual("isExpired").get(function () {
+  return this.expiredAt < Date.now();
+});
 
 const ActivityNotice = mongoose.model("ActivityNotice", activityNoticeSchema);
 
-module.exports = ActivityNotice;
+export default ActivityNotice;

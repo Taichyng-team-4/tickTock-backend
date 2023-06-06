@@ -3,10 +3,10 @@ import validator from "validator";
 
 const ticketSchema = new mongoose.Schema(
   {
-    customerId: {
+    ownerId: {
       type: mongoose.Types.ObjectId,
       ref: "User",
-      required: [true, "An ticket should has an customerId"],
+      required: [true, "An ticket should has an ownerId"],
     },
     activityId: {
       type: mongoose.Types.ObjectId,
@@ -23,14 +23,9 @@ const ticketSchema = new mongoose.Schema(
       ref: "Order",
       required: [true, "An ticket should has an orderId"],
     },
-    isValid: { type: Boolean, default: true },
-    ticketTypeName: {
-      type: String,
-      require: [true, "A ticket should has its type name"],
-    },
     zone: {
       type: Boolean,
-      require: [true, "A ticket should has a zone"],
+      required: [true, "A ticket should has a zone"],
       validate: [
         validator.isAlphanumeric,
         "The zone of ticket should only contain alphabet or number.",
@@ -38,37 +33,32 @@ const ticketSchema = new mongoose.Schema(
     },
     seatNo: {
       type: Boolean,
-      require: [true, "A ticket should has a seat number"],
+      required: [true, "A ticket should has a seat number"],
       validate: [
         validator.isAlphanumeric,
         "The seat number of ticket should only contain alphabet or number.",
       ],
     },
-    currency: {
-      type: String,
-      require: [true, "A ticket should has a currency when purchase"],
-      validate: [validator.isAlpha, "Currency should only contain alphabet"],
-    },
     price: {
       type: Boolean,
-      require: [true, "A ticket should has a price when purchase"],
+      required: [true, "A ticket should has a price when purchase"],
       validate: [validator.isNumeric, "Price should only contain number"],
     },
     QRcode: {
       type: Boolean,
-      require: [true, "A ticket should has its QRcode of the pass"],
+      required: [true, "A ticket should has its QRcode of the pass"],
     },
     startAt: {
       type: Date,
-      require: [true, "A ticket should mark the activity start date"],
+      required: [true, "A ticket should mark the activity start date"],
+    },
+    expiredAt: {
+      type: Date,
+      required: [true, "A ticket should mark the expired date"],
     },
     refundedAt: {
       type: Date,
       default: null,
-    },
-    expiredAt: {
-      type: Date,
-      require: [true, "A ticket should mark the expired date"],
     },
     deletedAt: { type: Date, select: false },
     __v: { type: Number, select: false },
@@ -80,13 +70,23 @@ const ticketSchema = new mongoose.Schema(
   }
 );
 
-ticketSchema.virtual("isStart").get(() => this.startAt > Date.now());
-ticketSchema.virtual("isRefunded").get(() => {
-  if (!this.refundedAt) return false;
-  return true;
+ticketSchema.virtual("isStart").get(function () {
+  return this.startAt < Date.now();
 });
-ticketSchema.virtual("isExpired").get(() => this.expiredAt > Date.now());
+
+ticketSchema.virtual("isExpired").get(function () {
+  return this.expiredAt < Date.now();
+});
+
+ticketSchema.virtual("isRefunded").get(function () {
+  if (!this.refundedAt) return false;
+  return this.refundedAt < Date.now();
+});
+
+ticketSchema.virtual("isValid").get(function () {
+  return !this.refundedAt && this.expiredAt > Date.now();
+});
 
 const Ticket = mongoose.model("Ticket", ticketSchema);
 
-module.exports = Ticket;
+export default Ticket;

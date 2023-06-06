@@ -18,13 +18,18 @@ import profileRouters from "../routes/profile.js";
 import authRouters from "../routes/auth.js";
 import oauthRouters from "../routes/oauth.js";
 import orgRouters from "../routes/orgs.js";
-import newsRouters from "../routes/news.js";
+import activityNoticeRouters from "../routes/activityNotice.js";
+import systemNoticeRouters from "../routes/systemNotice.js";
 import orderRouters from "../routes/order.js";
 import ticketRouters from "../routes/ticket.js";
 import otherRouters from "../routes/other.js";
 import activityRouters from "../routes/activity.js";
 import venueRouters from "../routes/venue.js";
 import settingRouters from "../routes/activitySetting.js";
+import ticketTypeRouters from "../routes/ticketType.js"
+import ticketListRouters from "../routes/ticketList.js"
+import partnerRouters from "../routes/partner.js";
+import faqRouters  from "../routes/faq.js";
 
 import { errorHandler } from "../utils/error/errorHandler.js";
 import "./passportInit.js";
@@ -99,7 +104,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Routes
 app.use("/api/v1/orgs", orgRouters);
-app.use("/api/v1/news", newsRouters);
+app.use("/api/v1/notices/activity", activityNoticeRouters);
+app.use("/api/v1/notices/system", systemNoticeRouters);
 app.use("/api/v1/users", userRouters);
 app.use("/api/v1/profile", profileRouters);
 app.use("/api/v1/auths", authRouters);
@@ -109,6 +115,10 @@ app.use("/api/v1/tickets", ticketRouters);
 app.use("/api/v1/activities", activityRouters);
 app.use("/api/v1/venues", venueRouters);
 app.use("/api/v1/settings", settingRouters);
+app.use("/api/v1/ticketTypes",ticketTypeRouters);
+app.use("/api/v1/ticketLists",ticketListRouters);
+app.use("/api/v1/partners", partnerRouters);
+app.use("/api/v1/faqs", faqRouters);
 app.use("/api/v1", otherRouters);
 
 // Routes not found
