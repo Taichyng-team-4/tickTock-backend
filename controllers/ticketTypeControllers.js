@@ -16,7 +16,7 @@ export const createMany = catchAsync(async (req, res, next) => {
     errorTable.validateError("ticketTypes");
 
   //確認資料多筆，在每個 ticketType 中加入 activityId
-  req.body.ticketTypes = helper.addActivityIdtOObjs(
+  req.body.ticketTypes = helper.addActivityIdToObjs(
     req.body.ticketTypes,
     activityId
   );

@@ -64,7 +64,12 @@ export const updateMany = catchAsync(async (req, res, next) => {
 
 export const deleteMany = catchAsync(async (req, res, next) => {
   await TicketList.updateMany(
-    { activityId, deletedAt: null, ticketId: null, isTrading: false },
+    {
+      activityId: req.body.activityId,
+      deletedAt: null,
+      ticketId: null,
+      isTrading: false,
+    },
     { $set: { deletedAt: Date.now() } }
   );
 

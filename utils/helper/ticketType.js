@@ -8,7 +8,7 @@ export const updateTicketTypes = async (
   session
 ) => {
   const updateTicketTypeIds = updateQuery.map((el) => el.id);
-  const createQueryWithActivityId = helper.addActivityIdtOObjs(
+  const createQueryWithActivityId = helper.addActivityIdToObjs(
     createQuery,
     activityId
   );

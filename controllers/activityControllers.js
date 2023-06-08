@@ -39,7 +39,7 @@ export const checkOwner = catchAsync(async (req, res, next) => {
   if (ownerId !== req.user.id) throw errorTable.noPermissionError();
   req.activityId = activity.id;
   req.settingId = activity.settingId.toString();
-
+  
   next();
 });
 
@@ -89,7 +89,7 @@ export const createOne = catchAsync(async (req, res, next) => {
     // 4) create ticketTypes
     req.body.ticketTypeIds = [];
     if (req.body.ticketTypes && req.body.ticketTypes.length) {
-      req.body.ticketTypes = helper.addActivityIdtOObjs(
+      req.body.ticketTypes = helper.addActivityIdToObjs(
         req.body.ticketTypes,
         activity.id
       );

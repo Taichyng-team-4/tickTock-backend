@@ -70,7 +70,7 @@ export const generateSeatNumber = () => {
   return ticketNumber;
 };
 
-export const addActivityIdtOObjs = (objs, activityId) =>
+export const addActivityIdToObjs = (objs, activityId) =>
   objs.map((el) => ({ ...el, activityId }));
 
 export const checkSameIds = (array) => {

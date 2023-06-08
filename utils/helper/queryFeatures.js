@@ -82,6 +82,7 @@ class queryFeatures {
 
     const popBy = this.demand.pop.split(",").join(" ");
     this.query.populate(popBy, "-createdAt -updatedAt");
+
     return this;
   }
 }

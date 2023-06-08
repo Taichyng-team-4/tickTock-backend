@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import validator from "validator";
 
 const orderSchema = new mongoose.Schema(
   {
@@ -7,15 +8,36 @@ const orderSchema = new mongoose.Schema(
       ref: "User",
       required: [true, "An order should has an owner"],
     },
-    activityId: {
-      type: mongoose.Types.ObjectId,
-      ref: "Activity",
-      required: [true, "An order should has an activityId"],
-    },
-    finance_info: {
+    currency: {
       type: String,
-      required: [true, "An order should has its transaction number"],
+      required: [true, "An order should has a currency type"],
     },
+    amount: {
+      type: Number,
+      required: [true, "An order should has an amount for total cost"],
+      validate: [
+        (value) => validator.isNumeric(value.toString()),
+        "Amount should only contain number",
+      ],
+    },
+    detail: [
+      {
+        activityId: {
+          type: mongoose.Types.ObjectId,
+          ref: "Activity",
+          required: [true, "An order detail should has an activityId"],
+        },
+        ticketTypeId: {
+          type: mongoose.Types.ObjectId,
+          ref: "TicketType",
+          required: [true, "An order detail should has a ticketTypeId"],
+        },
+        ticketIds: {
+          type: [mongoose.Types.ObjectId],
+          ref: "TicketList",
+        },
+      },
+    ],
     deletedAt: { type: Date, select: false },
     __v: { type: Number, select: false },
   },
@@ -26,6 +48,6 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
-const order = mongoose.model("Order", orderSchema);
+const Order = mongoose.model("Order", orderSchema);
 
-module.exports = order;
+export default Order;
