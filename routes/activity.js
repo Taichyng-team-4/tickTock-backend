@@ -25,7 +25,7 @@ router.use(
 
 router
   .route("/")
-  .get(factory.getAll(Activity))
+  .get(activityControllers.getAll)
   .post(
     [
       check("orgId").notEmpty(),

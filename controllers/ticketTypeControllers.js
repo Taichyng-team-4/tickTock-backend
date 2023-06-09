@@ -5,8 +5,64 @@ import TicketList from "../models/ticketList.js";
 import * as helper from "../utils/helper/helper.js";
 import catchAsync from "../utils/error/catchAsync.js";
 import * as errorTable from "../utils/error/errorTable.js";
+import queryFeatures from "../utils/helper/queryFeatures.js";
 import * as ticketTypeHelper from "../utils/helper/ticketType.js";
 import * as ticketListHelper from "../utils/helper/ticketList.js";
+
+export const getAll = catchAsync(async (req, res, next) => {
+  const features = new queryFeatures(TicketType.find({}), req.query)
+    .filter()
+    .select()
+    .sort()
+    .paginate()
+    .populate()
+    .includeDeleted();
+  let data = await features.query;
+  data = helper.removeDocsObjId(data);
+
+  if (req.query.pop)
+    data = data.map((el) =>
+      helper.removeFieldsId(el, req.query.pop.split(","))
+    );
+
+  // add remain ticket
+  await Promise.all(
+    data.map(async (ticketType) => {
+      const result = await TicketList.aggregate([
+        {
+          $match: {
+            ticketTypeId: new mongoose.Types.ObjectId(ticketType.id),
+            deletedAt: null,
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            remain: {
+              $sum: {
+                $cond: [
+                  {
+                    $or: [{ $eq: ["$ticketId", null] }, { $not: "$ticketId" }],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+          },
+        },
+      ]);
+      if (result && result.length === 1) ticketType.remain = result[0].remain;
+      else ticketType.remain = 0;
+    })
+  );
+
+  res.status(200).json({
+    status: "success",
+    count: data.length,
+    data,
+  });
+});
 
 export const createMany = catchAsync(async (req, res, next) => {
   let ticketTypes, ticketTypeIds;

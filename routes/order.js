@@ -11,7 +11,6 @@ const router = express.Router();
 
 router.get("/confirm", orderControllers.confirmOrder);
 router.get("/cancel", (req, res) => {
-  console.log(req.body);
   res.status(200).json({ order: "cancel" });
 });
 

@@ -7,11 +7,10 @@ import * as authControllers from "../controllers/authControllers.js";
 import * as shareControllers from "../controllers/shareControllers.js";
 import * as activityControllers from "../controllers/activityControllers.js";
 import * as ticketTypeControllers from "../controllers/ticketTypeControllers.js";
-import * as ticketListControllers from "../controllers/ticketListControllers.js";
 
 const router = express.Router({ mergeParams: true });
 
-router.get("/", factory.getAll(TicketType));
+router.get("/", ticketTypeControllers.getAll);
 
 router.get("/:id", factory.getOne(TicketType));
 

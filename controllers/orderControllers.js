@@ -229,7 +229,7 @@ export const confirmOrder = catchAsync(async (req, res) => {
           });
         })
       );
-        console.log(order.detail[0].ticketIds, order.detail[0].ticketListIds)
+
       // 3) Registed the ticket
       const registedTickets = order.detail
         .map((orderDetail) => orderDetail.ticketListIds)
