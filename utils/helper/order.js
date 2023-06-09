@@ -35,7 +35,7 @@ export const isOrderCorrect = (order) => {
   if (!order && order.detail && Array.isArray(order.detail)) return false;
   if (
     order.detail.length &&
-    !(order.detail[0].ticketIds && Array.isArray(order.detail[0].ticketIds))
+    !(order.detail[0].ticketListIds && Array.isArray(order.detail[0].ticketListIds))
   )
     return false;
   return true;
@@ -59,6 +59,7 @@ export const createPackageProducts = (ticketTypes, createList) =>
     const product = {
       name: el.name,
       price: el.price,
+      imageUrl: createList[el.id].activity.themeImg,
       quantity: createList[el.id].quantity,
     };
     return product;

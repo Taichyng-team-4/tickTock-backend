@@ -34,11 +34,22 @@ const orderSchema = new mongoose.Schema(
         },
         ticketIds: {
           type: [mongoose.Types.ObjectId],
+          ref: "Ticket",
+        },
+        ticketListIds: {
+          type: [mongoose.Types.ObjectId],
           ref: "TicketList",
         },
       },
     ],
-    deletedAt: { type: Date, select: false },
+    paymentUrl: {
+      type: String,
+      select: false,
+      validate: [validator.isURL, "The payment url should be an url"],
+    },
+    transactionId: { type: String, select: false },
+    expiredAt: { type: Date },
+    deletedAt: { type: Date },
     __v: { type: Number, select: false },
   },
   {
@@ -47,6 +58,26 @@ const orderSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+orderSchema.pre(/^find/, function () {
+  if (!(this.$locals && this.$locals.getDeleted))
+    this.where({ deletedAt: null });
+});
+
+orderSchema.pre(/^find/, function () {
+  if (!(this.$locals && this.$locals.getExpired))
+    this.where({ expiredAt: null });
+});
+
+orderSchema.virtual("isExpired").get(function () {
+  if (!this.expiredAt) return false;
+  return this.expiredAt < Date.now();
+});
+
+orderSchema.virtual("isTrading").get(function () {
+  if (!this.expiredAt) return false;
+  return Date.now() > this.expiredAt;
+});
 
 const Order = mongoose.model("Order", orderSchema);
 

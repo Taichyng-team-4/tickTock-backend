@@ -43,7 +43,6 @@ class queryFeatures {
         fields = fields.filter((el) => el !== "deletedAt");
         fields.push("+deletedAt");
       }
-
     } else fields = ["-createdAt", "-updatedAt", "-__v"];
 
     this.query = this.query.select(fields.join(" "));
@@ -53,6 +52,11 @@ class queryFeatures {
 
   includeDeleted() {
     if (!!+this.demand.deleted) this.query.$locals = { getDeleted: true };
+    return this;
+  }
+
+  includeDeleted() {
+    if (!!+this.demand.expired) this.query.$locals = { getExpired: true };
     return this;
   }
 
