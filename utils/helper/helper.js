@@ -52,6 +52,8 @@ export const toLocalTime = (date) => date.split("-").join("/");
 export const removeId = (e) => {
   if (e.endsWith("Id")) return e.slice(0, -2);
   if (e.endsWith("ID")) return e.slice(0, -2);
+  if (e.endsWith("Ids")) return e.slice(0, -3) + "s";
+  if (e.endsWith("IDs")) return e.slice(0, -3) + "s";
   return e;
 };
 
@@ -70,7 +72,7 @@ export const generateSeatNumber = () => {
   return ticketNumber;
 };
 
-export const addActivityIdtOObjs = (objs, activityId) =>
+export const addActivityIdToObjs = (objs, activityId) =>
   objs.map((el) => ({ ...el, activityId }));
 
 export const checkSameIds = (array) => {

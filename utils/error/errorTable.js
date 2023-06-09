@@ -139,3 +139,6 @@ export const tradingFailError = () =>
 
 export const notSaleDurationError = () =>
   new AppError("Not for sale duration.", 400, "C10010003");
+
+export const confirmTradingFailError = () =>
+  new AppError("Confirm trading fail error.", 500, "F10010001");

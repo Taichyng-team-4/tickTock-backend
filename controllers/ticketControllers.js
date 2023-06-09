@@ -52,12 +52,12 @@ export const createMany = catchAsync(async (req, res, next) => {
   // 1) check the ticket type and convert it to dictionary
   req.body.tickets.forEach((el) => {
     if (!el.ticketTypeId) throw errorTable.validateError("ticketTypeId");
-    if (el.amount && typeof +el.amount === "number") {
+    if (el.quantity && typeof +el.quantity === "number") {
       if (createList[el.ticketTypeId]) {
-        createList[el.ticketTypeId].amount += +el.amount;
+        createList[el.ticketTypeId].quantity += +el.quantity;
       } else {
         createList[el.ticketTypeId] = {
-          amount: el.amount,
+          quantity: el.quantity,
         };
       }
     }
@@ -98,12 +98,12 @@ export const createMany = catchAsync(async (req, res, next) => {
   try {
     await Promise.all(
       Object.values(createList).map(async (query) => {
-        let result, registTickets;
+        let registTickets;
         // 1) regist the ticket to the ticket list and get the zone, seatNo, price and qrcode information
         registTickets = await TicketList.find({
           ticketTypeId: query.ticketType.id,
           ticketId: null,
-        }).limit(query.amount);
+        }).limit(query.quantity);
         if (!registTickets.length) throw errorTable.tradingFailError();
 
         const ids = registTickets.map((el) => el.id);
@@ -156,10 +156,8 @@ export const createMany = catchAsync(async (req, res, next) => {
         );
       })
     );
-
     await session.commitTransaction();
   } catch (error) {
-    console.log(error);
     await session.abortTransaction();
     throw errorTable.createDBFailError("ticket");
   } finally {

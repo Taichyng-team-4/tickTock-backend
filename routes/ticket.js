@@ -3,9 +3,9 @@ import Ticket from "../models/ticket.js";
 import { body } from "express-validator";
 import * as factory from "../controllers/factory.js";
 
-import * as ticketControllers from "../controllers/ticketControllers.js";
-import * as shareControllers from "../controllers/shareControllers.js";
 import * as authControllers from "../controllers/authControllers.js";
+import * as shareControllers from "../controllers/shareControllers.js";
+import * as ticketControllers from "../controllers/ticketControllers.js";
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ router
     [
       body("tickets").notEmpty(),
       body("tickets.*.ticketTypeId").notEmpty(),
-      body("tickets.*.amount").notEmpty(),
+      body("tickets.*.quantity").notEmpty(),
     ],
     shareControllers.validation,
     ticketControllers.createMany
