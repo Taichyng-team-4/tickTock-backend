@@ -55,7 +55,7 @@ class queryFeatures {
     return this;
   }
 
-  includeDeleted() {
+  includeExpired() {
     if (!!+this.demand.expired) this.query.$locals = { getExpired: true };
     return this;
   }
