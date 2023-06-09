@@ -160,11 +160,11 @@ export const createOrder = catchAsync(async (req, res, next) => {
     }
   }, 60 * 60 * 20);
 
-  // res.redirect(data.info.paymentUrl.web);
-  res.status(200).json({
-    status: "success",
-    data,
-  });
+  res.redirect(data.info.paymentUrl.web);
+  // res.status(200).json({
+  //   status: "success",
+  //   data,
+  // });
 });
 
 export const confirmOrder = catchAsync(async (req, res) => {
