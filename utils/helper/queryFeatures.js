@@ -22,9 +22,11 @@ class queryFeatures {
       "gt",
       "lte",
       "lt",
+      "elemMatch",
     ]);
 
     this.query = this.query.find(queryStr);
+
     return this;
   }
 

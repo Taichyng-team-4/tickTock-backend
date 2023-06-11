@@ -1,8 +1,6 @@
 import express from "express";
 import { body } from "express-validator";
 
-import Order from "../models/order.js";
-import * as factory from "../controllers/factory.js";
 import * as authControllers from "../controllers/authControllers.js";
 import * as orderControllers from "../controllers/orderControllers.js";
 import * as shareControllers from "../controllers/shareControllers.js";
@@ -18,7 +16,7 @@ router.use(authControllers.authToken);
 
 router
   .route("/")
-  .get(factory.getAll(Order))
+  .get(orderControllers.getAll)
   .post(
     [
       body("tickets").notEmpty(),
@@ -28,5 +26,7 @@ router
     shareControllers.validation,
     orderControllers.createOrder
   );
+
+router.route("/me").get(orderControllers.getMe, orderControllers.getAll);
 
 export default router;
