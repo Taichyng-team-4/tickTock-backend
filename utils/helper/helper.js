@@ -69,9 +69,9 @@ export const removeFieldsId = (obj, fields) =>
     return acc;
   }, {});
 
-export const generateSeatNumber = () => {
-  const ticketNumber = uuidv4().replace(/-/g, "").substring(0, 8).toUpperCase();
-  return ticketNumber;
+export const generateSeatNumber = (zone, seatOrder) => {
+  // const ticketNumber = uuidv4().replace(/-/g, "").substring(0, 8).toUpperCase();
+  return ("" + zone).toUpperCase() + seatOrder;
 };
 
 export const addActivityIdToObjs = (objs, activityId) =>

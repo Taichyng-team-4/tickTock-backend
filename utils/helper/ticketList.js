@@ -140,10 +140,15 @@ export const updateTicketLists = async (
   });
 };
 
-export const generateSingleTicket = (activityId, ticketTypeId) => ({
+export const generateSingleTicket = ({
   activityId,
   ticketTypeId,
-  seatNo: helper.generateSeatNumber(),
+  zone,
+  seatOrder,
+}) => ({
+  activityId,
+  ticketTypeId,
+  seatNo: helper.generateSeatNumber(zone, seatOrder),
 });
 
 export const generateTicketListFromTicketTypes = (
@@ -157,7 +162,12 @@ export const generateTicketListFromTicketTypes = (
       throw errorTable.wrongFormatError();
 
     for (let i = 0; i < ticketType[amoutKey]; i++) {
-      const newTicket = generateSingleTicket(activityId, ticketType.id);
+      const newTicket = generateSingleTicket({
+        activityId,
+        ticketTypeId: ticketType.id,
+        zone: ticketType.zone,
+        seatOrder: i + 1,
+      });
       ticketListData.push(newTicket);
     }
   }
