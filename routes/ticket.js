@@ -25,6 +25,7 @@ router
   )
   .delete(
     [body("ticketIds").notEmpty()],
+    shareControllers.validation,
     ticketControllers.checkOwners,
     ticketControllers.deleteMany
   );

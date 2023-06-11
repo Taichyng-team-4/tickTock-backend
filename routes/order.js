@@ -4,6 +4,7 @@ import { body } from "express-validator";
 import * as authControllers from "../controllers/authControllers.js";
 import * as orderControllers from "../controllers/orderControllers.js";
 import * as shareControllers from "../controllers/shareControllers.js";
+import * as ticketControllers from "../controllers/ticketControllers.js";
 
 const router = express.Router();
 
@@ -25,7 +26,20 @@ router
     ],
     shareControllers.validation,
     orderControllers.createOrder
+  )
+  .delete(
+    [body("ticketIds").notEmpty()],
+    shareControllers.validation,
+    ticketControllers.checkOwners,
+    orderControllers.refundOrder
   );
+
+router.delete(
+  "/:id",
+  orderControllers.getOrderTicketIds,
+  ticketControllers.checkOwners,
+  orderControllers.refundOrder
+);
 
 router.route("/me").get(orderControllers.getMe, orderControllers.getAll);
 

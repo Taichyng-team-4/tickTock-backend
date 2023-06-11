@@ -244,7 +244,6 @@ export const createOrder = catchAsync(async (req, res, next) => {
 export const confirmOrder = catchAsync(async (req, res) => {
   let data;
   let tickets = [];
-  const orderTicketIds = [];
 
   const { transactionId, orderId } = req.query;
   const confirmURL = `/v3/payments/${transactionId}/confirm`;
@@ -360,4 +359,68 @@ export const cancelOrder = catchAsync((req, res) => {
   res
     .status(200)
     .json({ status: "success", message: "transaction cancel success!" });
+});
+
+export const getOrderTicketIds = catchAsync(async (req, res, next) => {
+  // 1) Find the order
+  const order = await Order.findById(req.params.id);
+  if (!order) throw errorTable.idNotFoundError();
+
+  // 2) Setting the ticketIds
+  req.body.ticketIds = order.detail
+    .map((ticketType) => ticketType.ticketIds.map((el) => el.toString()))
+    .flat();
+
+  next();
+});
+
+export const refundOrder = catchAsync(async (req, res) => {
+  // 1) check the ticket has been refuned or expired
+  req.tickets.forEach((ticket) => {
+    if (ticket.refundedAt || Date.now() > ticket.startAt)
+      throw errorTable.noPermissionError();
+  });
+
+  // 2) Refund the tickets
+  const session = await mongoose.startSession();
+  await session.withTransaction(async () => {
+    try {
+      // 1) Refund the tickets
+      await Ticket.updateMany(
+        { _id: { $in: req.body.ticketIds }, refundedAt: null, deletedAt: null },
+        {
+          $set: { refundedAt: Date.now() },
+        },
+        { session }
+      );
+
+      // 2) Check the refunded ticket number if correct
+      const oldTicketLists = await TicketList.find(
+        {
+          ticketId: { $in: req.body.ticketIds },
+          deletedAt: null,
+          isTrading: false,
+        },
+        null,
+        { session }
+      );
+      if (oldTicketLists.length !== req.body.ticketIds.length)
+        throw errorTable.refundTradingFailError();
+
+      // 3) sign out the ticket from ticketLists
+      await TicketList.updateMany(
+        {
+          ticketId: { $in: req.body.ticketIds },
+          deletedAt: null,
+          isTrading: false,
+        },
+        { $unset: { ticketId: 1 } },
+        { session }
+      );
+    } catch (err) {
+      throw errorTable.refundTradingFailError();
+    }
+  });
+
+  res.status(204).json({});
 });
