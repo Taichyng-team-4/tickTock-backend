@@ -1,3 +1,4 @@
+import axios from "axios";
 import mongoose from "mongoose";
 
 import Order from "../models/order.js";
@@ -5,9 +6,71 @@ import Ticket from "../models/ticket.js";
 import Activity from "../models/activity.js";
 import TicketList from "../models/ticketList.js";
 import TicketType from "../models/ticketType.js";
+import * as helper from "../utils/helper/helper.js";
 import catchAsync from "../utils/error/catchAsync.js";
 import * as orderHelper from "../utils/helper/order.js";
 import * as errorTable from "../utils/error/errorTable.js";
+import queryFeatures from "../utils/helper/queryFeatures.js";
+
+export const getMe = catchAsync(async (req, res, next) => {
+  if (req.params.ownerId) req.query.ownerId = req.user.id;
+  next();
+});
+
+export const setActivityId = catchAsync(async (req, res, next) => {
+  if (req.params.activityId)
+    req.query.detail = { elemMatch: { activityId: req.params.activityId } };
+  next();
+});
+
+export const setOwnerId = catchAsync(async (req, res, next) => {
+  if (req.params.ownerId) req.query.ownerId = req.params.ownerId;
+  next();
+});
+
+export const getAll = catchAsync(async (req, res, next) => {
+  // Add ticket deatil info
+  if (req.query.pop)
+    req.query.pop = helper.addURLQueryPop(req.query.pop, ["detail.ticketIds"]);
+  else req.query.pop = "detail.ticketIds";
+
+  // Get data
+  const features = new queryFeatures(Order.find({}), req.query)
+    .filter()
+    .select()
+    .sort()
+    .paginate()
+    .populate()
+    .includeDeleted();
+
+  let data = await features.query;
+  data = helper.removeDocsObjId(data);
+
+  if (req.query.pop)
+    data = data.map((el) =>
+      helper.removeFieldsId(el, req.query.pop.split(","))
+    );
+
+  data.forEach((order) => {
+    order.remainAmount = 0;
+    if (order.detail && order.detail.length) {
+      order.detail.forEach((ticketType) => {
+        if (ticketType.ticketIds) {
+          ticketType.ticketIds.forEach((ticket) => {
+            if (ticket.price && !ticket.isRefunded)
+              order.remainAmount += ticket.price;
+          });
+        }
+      });
+    }
+  });
+
+  res.status(200).json({
+    status: "success",
+    count: data.length,
+    data,
+  });
+});
 
 export const createOrder = catchAsync(async (req, res, next) => {
   let data;
@@ -29,6 +92,7 @@ export const createOrder = catchAsync(async (req, res, next) => {
   // 2) Find the ticket type
   const ticketTypeIds = Object.keys(createList);
   const ticketTypes = await TicketType.find({ _id: { $in: ticketTypeIds } });
+
   if (ticketTypes.length !== ticketTypeIds.length)
     throw errorTable.tradingFailError();
 
@@ -55,7 +119,7 @@ export const createOrder = catchAsync(async (req, res, next) => {
   const session = await mongoose.startSession();
   await session.withTransaction(async () => {
     try {
-      // 1) Find the tickets need to be book in the activity ticket list and information
+      // 1) Find the tickets need to be booked in the activity ticket list and information
       await Promise.all(
         Object.values(createList).map(async (query) => {
           let bookedTickets;
@@ -117,16 +181,25 @@ export const createOrder = catchAsync(async (req, res, next) => {
         linePayBody
       );
 
-      const response = await fetch(
+      // const response = await fetch(
+      //   "https://sandbox-api-pay.line.me/v3/payments/request",
+      //   {
+      //     method: "POST",
+      //     headers: linePayHeaders,
+      //     body: JSON.stringify(linePayBody),
+      //   }
+      // );
+
+      // if (!response.ok) throw errorTable.tradingFailError();
+      // data = await response.json();
+
+      const response = await axios.post(
         "https://sandbox-api-pay.line.me/v3/payments/request",
-        {
-          method: "POST",
-          headers: linePayHeaders,
-          body: JSON.stringify(linePayBody),
-        }
+        linePayBody,
+        { headers: linePayHeaders }
       );
-      if (!response.ok) throw errorTable.tradingFailError();
-      data = await response.json();
+      data = response.data;
+
       if (data.returnCode === "0000") {
         order.paymentUrl = data.info.paymentUrl.web;
         order.transactionId = data.info.transactionId;
@@ -134,6 +207,7 @@ export const createOrder = catchAsync(async (req, res, next) => {
         await order.save({ session });
       } else throw errorTable.tradingFailError();
     } catch (error) {
+      console.log(error);
       throw errorTable.createDBFailError("ticket");
     }
   });
@@ -160,11 +234,11 @@ export const createOrder = catchAsync(async (req, res, next) => {
     }
   }, 60 * 60 * 20);
 
-  res.redirect(data.info.paymentUrl.web);
-  // res.status(200).json({
-  //   status: "success",
-  //   data,
-  // });
+  // res.redirect(data.info.paymentUrl.web);
+  res.status(200).json({
+    status: "success",
+    data,
+  });
 });
 
 export const confirmOrder = catchAsync(async (req, res) => {
@@ -252,16 +326,24 @@ export const confirmOrder = catchAsync(async (req, res) => {
 
       // 4) Confrim the transaction to Line Pay
       const headers = orderHelper.createLinePayHeader(confirmURL, confirmBody);
-      const response = await fetch(
+      // const response = await fetch(
+      //   process.env.LINEPAY_SERVER_URL + confirmURL,
+      //   {
+      //     method: "POST",
+      //     headers,
+      //     body: JSON.stringify(confirmBody),
+      //   }
+      // );
+      // if (!response.ok) throw errorTable.confirmTradingFailError();
+      // data = await response.json();
+
+      const response = await axios.post(
         process.env.LINEPAY_SERVER_URL + confirmURL,
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify(confirmBody),
-        }
+        confirmBody,
+        { headers }
       );
-      if (!response.ok) throw errorTable.confirmTradingFailError();
-      data = await response.json();
+      data = response.data;
+
       if (data.returnCode === "0000") await session.commitTransaction();
       else throw errorTable.confirmTradingFailError();
     } catch (err) {

@@ -1,5 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 
+import * as errorTable from "../error/errorTable.js";
+
 export const removeDocKeys = (obj, keys) =>
   obj.toObject({
     transform: (doc, ret) => {
@@ -81,4 +83,13 @@ export const checkSameIds = (array) => {
     if (el.id !== firstId) return false;
     return true;
   });
+};
+
+export const addURLQueryPop = (origin, targets) => {
+  if (!Array.isArray(targets)) throw errorTable.inputFormatError();
+  if (origin)
+    return Array.from(new Set([...origin.split(","), ...targets])).join(" ");
+  else {
+    return targets.split(",").join(" ");
+  }
 };

@@ -142,3 +142,6 @@ export const notSaleDurationError = () =>
 
 export const confirmTradingFailError = () =>
   new AppError("Confirm trading fail error.", 500, "F10010001");
+
+export const inputFormatError = () =>
+  new AppError("Unknown error happen!", 500, "F10010001");
