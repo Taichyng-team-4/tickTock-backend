@@ -159,7 +159,7 @@ export const createOrder = catchAsync(async (req, res, next) => {
             {
               ownerId: req.user.id,
               amount,
-              currency: "JPY",
+              currency: process.env.LINEPAY_CURRENCY,
               detail: orderDetail,
             },
           ],
@@ -199,7 +199,7 @@ export const createOrder = catchAsync(async (req, res, next) => {
         { headers: linePayHeaders }
       );
       data = response.data;
-
+      console.log(data);
       if (data.returnCode === "0000") {
         order.paymentUrl = data.info.paymentUrl.web;
         order.transactionId = data.info.transactionId;
@@ -207,7 +207,6 @@ export const createOrder = catchAsync(async (req, res, next) => {
         await order.save({ session });
       } else throw errorTable.tradingFailError();
     } catch (error) {
-      console.log(error);
       throw errorTable.createDBFailError("ticket");
     }
   });
@@ -265,7 +264,7 @@ export const confirmOrder = catchAsync(async (req, res) => {
 
   const confirmBody = {
     amount: order.amount,
-    currency: "JPY",
+    currency: process.env.LINEPAY_CURRENCY,
   };
 
   // 4) regist the tickets to user
