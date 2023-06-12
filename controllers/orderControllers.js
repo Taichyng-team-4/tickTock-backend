@@ -345,6 +345,7 @@ export const confirmOrder = catchAsync(async (req, res) => {
       if (data.returnCode === "0000") await session.commitTransaction();
       else throw errorTable.confirmTradingFailError();
     } catch (err) {
+      console.log(err);
       errorTable.confirmTradingFailError();
     }
   });
