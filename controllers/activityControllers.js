@@ -37,11 +37,12 @@ export const getAll = catchAsync(async (req, res, next) => {
     );
 
   // add remain ticket
-  if (req.query.pop?.split(",")?.includes("ticketTypeIds"))
+  if (req.query.pop?.split(",")?.includes("ticketTypeIds")) {
     await Promise.all(
       data.map(async (activity) =>
         Promise.all(
           activity?.ticketTypes?.map(async (ticketType) => {
+            data.total += ticketType.total;
             const result = await TicketList.aggregate([
               {
                 $match: {
@@ -69,13 +70,15 @@ export const getAll = catchAsync(async (req, res, next) => {
                 },
               },
             ]);
-            if (result && result.length === 1)
+            if (result && result.length === 1) {
               ticketType.remain = result[0].remain;
-            else ticketType.remain = 0;
+              data.remain += result[0].remain;
+            } else ticketType.remain = 0;
           })
         )
       )
     );
+  }
 
   res.status(200).json({
     status: "success",
