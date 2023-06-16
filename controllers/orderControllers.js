@@ -169,7 +169,7 @@ export const createOrder = catchAsync(async (req, res, next) => {
       finalOrderId = order.id;
 
       // 4) Create Line Pay cash flow
-      const linePayBody = await orderHelper.creatLinePayBody({
+      const linePayBody = orderHelper.creatLinePayBody({
         order,
         ticketTypes,
         createList,
@@ -199,7 +199,6 @@ export const createOrder = catchAsync(async (req, res, next) => {
         { headers: linePayHeaders }
       );
       data = response.data;
-      console.log(data);
       if (data.returnCode === "0000") {
         order.paymentUrl = data.info.paymentUrl.web;
         order.transactionId = data.info.transactionId;
@@ -345,7 +344,7 @@ export const confirmOrder = catchAsync(async (req, res) => {
       if (data.returnCode === "0000") await session.commitTransaction();
       else throw errorTable.confirmTradingFailError();
     } catch (err) {
-      console.log(err);
+      console.log("Here is confirm order err...\n",err);
       errorTable.confirmTradingFailError();
     }
   });
