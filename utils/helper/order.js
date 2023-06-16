@@ -35,7 +35,10 @@ export const isOrderCorrect = (order) => {
   if (!order && order.detail && Array.isArray(order.detail)) return false;
   if (
     order.detail.length &&
-    !(order.detail[0].ticketListIds && Array.isArray(order.detail[0].ticketListIds))
+    !(
+      order.detail[0].ticketListIds &&
+      Array.isArray(order.detail[0].ticketListIds)
+    )
   )
     return false;
   return true;
@@ -71,7 +74,7 @@ export const createPackage = (ticketTypes, createList) => ({
   products: createPackageProducts(ticketTypes, createList),
 });
 
-export const creatLinePayBody = async ({ order, ticketTypes, createList }) => {
+export const creatLinePayBody = ({ order, ticketTypes, createList }) => {
   const orderPackage = createPackage(ticketTypes, createList);
 
   return {

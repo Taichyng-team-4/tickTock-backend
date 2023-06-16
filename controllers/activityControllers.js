@@ -1,16 +1,17 @@
 import mongoose from "mongoose";
-import catchAsync from "../utils/error/catchAsync.js";
+
 import Org from "../models/org.js";
 import Venue from "../models/venue.js";
 import Activity from "../models/activity.js";
 import TicketType from "../models/ticketType.js";
+import TicketList from "../models/ticketList.js";
 import * as helper from "../utils/helper/helper.js";
+import catchAsync from "../utils/error/catchAsync.js";
 import ActivitySetting from "../models/activitySetting.js";
 import * as errorTable from "../utils/error/errorTable.js";
 import queryFeatures from "../utils/helper/queryFeatures.js";
 import * as ticketTypeHelper from "../utils/helper/ticketType.js";
 import * as ticketListHelper from "../utils/helper/ticketList.js";
-import TicketList from "../models/ticketList.js";
 
 export const setActivityId = catchAsync(async (req, res, next) => {
   const activityId = req.params.activityId
@@ -39,10 +40,12 @@ export const getAll = catchAsync(async (req, res, next) => {
   // add remain ticket
   if (req.query.pop?.split(",")?.includes("ticketTypeIds")) {
     await Promise.all(
-      data.map(async (activity) =>
-        Promise.all(
+      data.map(async (activity) => {
+        activity.total = 0;
+        activity.remain = 0;
+        return Promise.all(
           activity?.ticketTypes?.map(async (ticketType) => {
-            data.total += ticketType.total;
+            activity.total += ticketType.total;
             const result = await TicketList.aggregate([
               {
                 $match: {
@@ -72,11 +75,11 @@ export const getAll = catchAsync(async (req, res, next) => {
             ]);
             if (result && result.length === 1) {
               ticketType.remain = result[0].remain;
-              data.remain += result[0].remain;
+              activity.remain += result[0].remain;
             } else ticketType.remain = 0;
           })
-        )
-      )
+        );
+      })
     );
   }
 
