@@ -32,20 +32,8 @@ class queryFeatures {
 
   select() {
     let fields = [];
-    if (this.demand.fields) {
-      fields = this.demand.fields.split(",");
-
-      if (!fields.includes("createdAt")) fields.push("-createdAt");
-      else fields = fields.filter((el) => el !== "createdAt");
-
-      if (!fields.includes("updatedAt")) fields.push("-updatedAt");
-      else fields = fields.filter((el) => el !== "updatedAt");
-
-      if (fields.includes("deletedAt")) {
-        fields = fields.filter((el) => el !== "deletedAt");
-        fields.push("+deletedAt");
-      }
-    } else fields = ["-createdAt", "-updatedAt", "-__v"];
+    if (this.demand.fields) fields = this.demand.fields.split(",");
+    else fields = ["-createdAt", "-updatedAt", "-__v"];
 
     this.query = this.query.select(fields.join(" "));
 
