@@ -29,8 +29,6 @@ export const getAll = (Model) =>
       .paginate()
       .populate()
       .includeDeleted();
-    console.log(features.query.getFilter());
-    console.log(features.query.getQuery());
 
     let data = await features.query;
     data = helper.removeDocsObjId(data);
