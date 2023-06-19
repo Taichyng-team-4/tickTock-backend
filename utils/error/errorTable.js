@@ -148,3 +148,6 @@ export const refundTradingFailError = () =>
 
 export const inputFormatError = () =>
   new AppError("Unknown error happen!", 500, "F10010001");
+
+  export const queueError = (index) =>
+  new AppError(`Execute queue error at ${index}`, 500, "F10010001");

@@ -14,7 +14,7 @@ const ticketListSchema = new mongoose.Schema(
     },
     ticketId: {
       type: mongoose.Types.ObjectId,
-      ref: "ticket",
+      ref: "Ticket",
     },
     seatNo: {
       type: String,
