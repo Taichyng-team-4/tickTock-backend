@@ -1,5 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
-
 import * as errorTable from "../error/errorTable.js";
 
 export const removeDocKeys = (obj, keys) =>
@@ -91,5 +89,39 @@ export const addURLQueryPop = (origin, targets) => {
     return Array.from(new Set([...origin.split(","), ...targets])).join(" ");
   else {
     return targets.split(",").join(" ");
+  }
+};
+
+export const executeInQueue = async ({
+  dataAry, //the array that you .map through
+  callback, //the function that you fire inside .map
+  index = 0,
+  log = "",
+  results = [],
+}) => {
+  log += `execute ${index}`;
+  if (index === dataAry.length) return results;
+
+  let d = dataAry[index];
+  try {
+    let result = await callback(d, index);
+
+    results.push(result);
+    log += `end ${index}`;
+    if (index >= dataAry.length) {
+      log += `finish all execute`;
+      return;
+    }
+    return executeInQueue({
+      dataAry,
+      callback,
+      log,
+      index: index + 1,
+      results,
+    });
+  } catch (err) {
+    console.log(err);
+    log += `error at execute ${index}`;
+    throw errorTable.queueError(index);
   }
 };

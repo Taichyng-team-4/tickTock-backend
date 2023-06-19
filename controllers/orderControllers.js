@@ -73,7 +73,7 @@ export const getAll = catchAsync(async (req, res, next) => {
 });
 
 export const createOrder = catchAsync(async (req, res, next) => {
-  let data;
+  let data, log;
   let createList = {};
   // 1) check the ticket type and convert it to dictionary
   req.body.tickets.forEach((el) => {
@@ -120,25 +120,31 @@ export const createOrder = catchAsync(async (req, res, next) => {
   await session.withTransaction(async () => {
     try {
       // 1) Find the tickets need to be booked in the activity ticket list and information
-      await Promise.all(
-        Object.values(createList).map(async (query) => {
-          let bookedTickets;
-          bookedTickets = await TicketList.find({
-            ticketTypeId: query.ticketType.id,
-            ticketId: null,
-            isTrading: false,
-          }).limit(query.quantity);
-          if (!bookedTickets.length) throw errorTable.tradingFailError();
+      const findTargetTicket = async (query) => {
+        let bookedTickets;
+        bookedTickets = await TicketList.find({
+          ticketTypeId: query.ticketType.id,
+          ticketId: null,
+          isTrading: false,
+        }).limit(query.quantity);
+        if (!bookedTickets.length) throw errorTable.tradingFailError();
 
-          const ids = bookedTickets.map((el) => el.id);
-          bookedTicketIds = [...bookedTicketIds, ...ids];
-          orderDetail.push({
-            activityId: query.activity.id,
-            ticketTypeId: query.ticketType.id,
-            ticketListIds: ids,
-          });
-        })
-      );
+        const ids = bookedTickets.map((el) => el.id);
+        bookedTicketIds = [...bookedTicketIds, ...ids];
+        orderDetail.push({
+          activityId: query.activity.id,
+          ticketTypeId: query.ticketType.id,
+          ticketListIds: ids,
+        });
+      };
+   
+      log = "findTargetTicket:";
+      await helper.executeInQueue({
+        dataAry: Object.values(createList),
+        callback: findTargetTicket,
+        log
+      });
+      console.log(2)
 
       // 2) Book the tickets in the activity ticket list
       await TicketList.updateMany(
@@ -206,6 +212,8 @@ export const createOrder = catchAsync(async (req, res, next) => {
         await order.save({ session });
       } else throw errorTable.tradingFailError();
     } catch (error) {
+      console.log("queue log:", log);
+      console.log(error);
       throw errorTable.createDBFailError("ticket");
     }
   });
@@ -240,6 +248,7 @@ export const createOrder = catchAsync(async (req, res, next) => {
 });
 
 export const confirmOrder = catchAsync(async (req, res) => {
+  let log;
   let data;
   let tickets = [];
 
@@ -270,54 +279,61 @@ export const confirmOrder = catchAsync(async (req, res) => {
   const session = await mongoose.startSession();
   await session.withTransaction(async () => {
     try {
-      await Promise.all(
-        order.detail.map(async (orderDetail) => {
-          // 1) create tickets
-          const ticketDatas = orderDetail.ticketListIds.map((el) => ({
-            registId: el.id,
-            ownerId: order.ownerId,
-            activityId: orderDetail.activityId.id,
-            ticketTypeId: orderDetail.ticketTypeId.id,
-            zone: orderDetail.ticketTypeId.zone,
-            seatNo: el.seatNo,
-            price: orderDetail.ticketTypeId.price,
-            startAt: orderDetail.activityId.startAt,
-            expiredAt: orderDetail.activityId.endAt,
-          }));
+      const createTicket = async (orderDetail) => {
+        // 1) create tickets
+        const ticketDatas = orderDetail.ticketListIds.map((el) => ({
+          registId: el.id,
+          ownerId: order.ownerId,
+          activityId: orderDetail.activityId.id,
+          ticketTypeId: orderDetail.ticketTypeId.id,
+          zone: orderDetail.ticketTypeId.zone,
+          seatNo: el.seatNo,
+          price: orderDetail.ticketTypeId.price,
+          startAt: orderDetail.activityId.startAt,
+          expiredAt: orderDetail.activityId.endAt,
+        }));
 
-          const createdTickets = await Ticket.create(ticketDatas, { session });
-          if (!createdTickets.length) throw errorTable.createDBFailError();
-          tickets = [...tickets, ...createdTickets];
+        const createdTickets = await Ticket.create(ticketDatas, { session });
+        if (!createdTickets.length) throw errorTable.createDBFailError();
+        tickets = [...tickets, ...createdTickets];
 
-          // 2) Match the tickets and ticket list by seatNo
-          orderDetail.ticketIds = [];
-          orderDetail.ticketListIds.forEach((bookedTicket) => {
-            const filterTickets = createdTickets.filter(
-              (el) => el.seatNo === bookedTicket.seatNo
-            );
-            bookedTicket.ticketId = filterTickets[0].id;
-            orderDetail.ticketIds.push(filterTickets[0].id);
-          });
-        })
-      );
+        // 2) Match the tickets and ticket list by seatNo
+        orderDetail.ticketIds = [];
+        orderDetail.ticketListIds.forEach((bookedTicket) => {
+          const filterTickets = createdTickets.filter(
+            (el) => el.seatNo === bookedTicket.seatNo
+          );
+          bookedTicket.ticketId = filterTickets[0].id;
+          orderDetail.ticketIds.push(filterTickets[0].id);
+        });
+      };
+
+      log = "createdTickets:";
+      await helper.executeInQueue({
+        dataAry: order.detail,
+        callback: createTicket,
+        log,
+      });
 
       // 3) Registed the ticket
       const registedTickets = order.detail
         .map((orderDetail) => orderDetail.ticketListIds)
         .flat();
 
-      await Promise.all(
-        registedTickets.map(async (el) =>
-          TicketList.findByIdAndUpdate(
-            el.id,
-            {
-              isTrading: false,
-              ticketId: el.ticketId,
-            },
-            { session }
-          )
-        )
-      );
+      const updateTicketList = async (el) =>
+        TicketList.findByIdAndUpdate(
+          el.id,
+          {
+            isTrading: false,
+            ticketId: el.ticketId,
+          },
+          { session }
+        );
+      log = "updateTicketList:";
+      await helper.executeInQueue({
+        dataAry: registedTickets,
+        callback: updateTicketList,
+      });
       order.expiredAt = undefined;
       await order.save({ session });
 
@@ -344,7 +360,8 @@ export const confirmOrder = catchAsync(async (req, res) => {
       if (data.returnCode === "0000") await session.commitTransaction();
       else throw errorTable.confirmTradingFailError();
     } catch (err) {
-      console.log("Here is confirm order err...\n",err);
+      console.log("queue log:", log);
+      console.log("Here is confirm order err...\n", err);
       errorTable.confirmTradingFailError();
     }
   });
