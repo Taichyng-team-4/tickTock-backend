@@ -23,10 +23,10 @@ class queryFeatures {
       "lte",
       "lt",
       "elemMatch",
+      "exists"
     ]);
 
     this.query = this.query.find(queryStr);
-
     return this;
   }
 
