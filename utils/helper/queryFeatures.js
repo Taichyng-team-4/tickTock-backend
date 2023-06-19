@@ -23,7 +23,7 @@ class queryFeatures {
       "lte",
       "lt",
       "elemMatch",
-      "exists"
+      "exists",
     ]);
 
     this.query = this.query.find(queryStr);
@@ -74,8 +74,12 @@ class queryFeatures {
   populate() {
     if (!this.demand.pop) return this;
 
-    const popBy = this.demand.pop.split(",").join(" ");
-    this.query.populate(popBy, "-createdAt -updatedAt");
+    if (this.demand.pop.includes(".")) {
+      this.query.populate(helper.generatePopulateObjects(this.demand.pop));
+    } else {
+      const popBy = this.demand.pop.split(",").join(" ");
+      this.query.populate(popBy);
+    }
 
     return this;
   }
