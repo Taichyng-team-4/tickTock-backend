@@ -1,5 +1,17 @@
 import * as errorTable from "../error/errorTable.js";
 
+const fieldModelMapping = {
+  userId: "User",
+  ownerId: "User",
+  orgId: "Org",
+  venueId: "Venue",
+  activityId: "Activity",
+  settingId: "ActivitySetting",
+  ticketId: "Ticket",
+  ticketListId: "TicketList",
+  ticketTypeIds: "TicketType",
+};
+
 export const removeDocKeys = (obj, keys) =>
   obj.toObject({
     transform: (doc, ret) => {
@@ -124,4 +136,38 @@ export const executeInQueue = async ({
     log += `error at execute ${index}`;
     throw errorTable.queueError(index);
   }
+};
+
+export const getModelNameByField = (field) => fieldModelMapping[field] || null;
+
+export const generatePopulateObject = (input) => {
+  const fields = input.split(".");
+  let populateObj = null;
+
+  for (let i = fields.length - 1; i >= 0; i--) {
+    const field = fields[i];
+    const modelName = getModelNameByField(field);
+    if (!modelName) return;
+    populateObj = {
+      path: field,
+      populate: populateObj,
+      model: modelName,
+      select: "-createdAt -updatedAt",
+    };
+  }
+
+  return populateObj;
+};
+
+export const generatePopulateObjects = (input) => {
+  const fields = input.split(","); // Split the input string by comma to get multiple paths
+  let populateObjs = [];
+
+  for (let i = 0; i < fields.length; i++) {
+    const field = fields[i].trim();
+
+    populateObjs.push(generatePopulateObject(field));
+  }
+
+  return populateObjs;
 };

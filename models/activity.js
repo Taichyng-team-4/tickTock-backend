@@ -31,7 +31,7 @@ const activitySchema = new mongoose.Schema(
     category: {
       type: String,
       enum: {
-        values: ["music", "sport", "drama", "art", "sport", "exhibition"],
+        values: ["music", "sport", "drama", "art", "festival", "exhibition"],
         message:
           "An activity category should be music, sport, drama, art, sport or exhibition",
       },
