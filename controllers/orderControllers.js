@@ -52,17 +52,19 @@ export const getAll = catchAsync(async (req, res, next) => {
     );
 
   data.forEach((order) => {
+    if (!order.detail) return;
+    if (!order.detail.length) return;
+    
     order.remainAmount = 0;
-    if (order.detail && order.detail.length) {
-      order.detail.forEach((ticketType) => {
-        if (ticketType.ticketIds) {
-          ticketType.ticketIds.forEach((ticket) => {
-            if (ticket.price && !ticket.isRefunded)
-              order.remainAmount += ticket.price;
-          });
-        }
+    order.detail.forEach((ticketType) => {
+      if (!ticketType.ticketIds) return;
+
+      ticketType.ticketIds.forEach((ticket) => {
+        if (!ticket.price) return;
+        if (ticket.isRefunded) return;
+        order.remainAmount += ticket.price;
       });
-    }
+    });
   });
 
   res.status(200).json({
@@ -74,7 +76,7 @@ export const getAll = catchAsync(async (req, res, next) => {
 
 export const createOrder = catchAsync(async (req, res, next) => {
   let data, log;
-  let createList = {};
+  const createList = {};
   // 1) check the ticket type and convert it to dictionary
   req.body.tickets.forEach((el) => {
     if (!el.ticketTypeId) throw errorTable.validateError("ticketTypeId");
@@ -93,8 +95,8 @@ export const createOrder = catchAsync(async (req, res, next) => {
   const ticketTypeIds = Object.keys(createList);
   const ticketTypes = await TicketType.find({ _id: { $in: ticketTypeIds } });
 
-  if (ticketTypes.length !== ticketTypeIds.length)
-    throw errorTable.tradingFailError();
+  const isAllTicketTypeExist = ticketTypes.length === ticketTypeIds.length;
+  if (!isAllTicketTypeExist) throw errorTable.tradingFailError();
 
   // 3) Get the activity
   const activityIds = Array.from(
@@ -137,14 +139,13 @@ export const createOrder = catchAsync(async (req, res, next) => {
           ticketListIds: ids,
         });
       };
-   
+
       log = "findTargetTicket:";
       await helper.executeInQueue({
         dataAry: Object.values(createList),
         callback: findTargetTicket,
-        log
+        log,
       });
-      console.log(2)
 
       // 2) Book the tickets in the activity ticket list
       await TicketList.updateMany(
