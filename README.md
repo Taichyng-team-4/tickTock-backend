@@ -11,9 +11,7 @@
 node >= 12
 
 ## DB Schema
-
-![ticktock](https://user-images.githubusercontent.com/105664533/236652970-e86850ec-1526-4b99-af51-66138dc68b6c.svg)
-
+![ticktock ER diagram](https://github.com/Taichyng-team-4/tickTock-backend/assets/105664533/0bcee432-7cbc-4b36-9b36-53d586af15fc)
 
 ### 分支規則
 
@@ -27,12 +25,6 @@ node >= 12
 2. 修復錯誤：**`fix: fix xxx issue`**
 3. 重構代碼：**`refactor: refactor xxx code`**
 4. 優化代碼：**`optimize: optimize xxx code`**
-5. 更新文檔：**`docs: update xxx doc`**
-6. 增加測試：**`test: add xxx test`**
-7. 增加依賴庫：**`deps: add xxx dependency`**
-8. 格式化代碼：**`style: format xxx code`**
-9. 提交注釋：**`chore: add xxx comment`**
-10. 回滾代碼：**`revert: revert xxx commit`**
 
 ## 開發流程
 
