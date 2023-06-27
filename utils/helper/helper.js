@@ -2,13 +2,22 @@ import * as errorTable from "../error/errorTable.js";
 
 const fieldModelMapping = {
   userId: "User",
+  userIds: "User",
   ownerId: "User",
+  ownerIds: "User",
   orgId: "Org",
+  orgIds: "Org",
   venueId: "Venue",
+  venueIds: "Venue",
   activityId: "Activity",
+  activityIds: "Activity",
   settingId: "ActivitySetting",
+  settingIds: "ActivitySetting",
   ticketId: "Ticket",
+  ticketIds: "Ticket",
   ticketListId: "TicketList",
+  ticketListIds: "TicketList",
+  ticketTypeId: "TicketType",
   ticketTypeIds: "TicketType",
 };
 
@@ -98,10 +107,8 @@ export const checkSameIds = (array) => {
 export const addURLQueryPop = (origin, targets) => {
   if (!Array.isArray(targets)) throw errorTable.inputFormatError();
   if (origin)
-    return Array.from(new Set([...origin.split(","), ...targets])).join(" ");
-  else {
-    return targets.split(",").join(" ");
-  }
+    return Array.from(new Set([...origin.split(","), ...targets])).join(",");
+  return targets;
 };
 
 export const executeInQueue = async ({
@@ -155,7 +162,6 @@ export const generatePopulateObject = (input) => {
       select: "-createdAt -updatedAt",
     };
   }
-
   return populateObj;
 };
 
@@ -165,8 +171,9 @@ export const generatePopulateObjects = (input) => {
 
   for (let i = 0; i < fields.length; i++) {
     const field = fields[i].trim();
-
-    populateObjs.push(generatePopulateObject(field));
+    const popObj = generatePopulateObject(field);
+    if (!popObj) populateObjs.push(field);
+    else populateObjs.push(popObj);
   }
 
   return populateObjs;

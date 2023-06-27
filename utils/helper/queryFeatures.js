@@ -73,7 +73,7 @@ class queryFeatures {
 
   populate() {
     if (!this.demand.pop) return this;
-
+    console.log(this.demand.pop)
     if (this.demand.pop.includes(".")) {
       this.query.populate(helper.generatePopulateObjects(this.demand.pop));
     } else {
