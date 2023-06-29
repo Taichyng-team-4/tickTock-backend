@@ -88,6 +88,7 @@ export const updateImg = catchAsync(async (req, res, next) => {
       img = await s3.uploadToS3(req.file);
       img = await s3.getFileFromS3(img);
     } catch (err) {
+      console.log(err)
       throw errorTable.idNotFoundError();
     }
   }

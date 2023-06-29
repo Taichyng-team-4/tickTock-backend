@@ -149,5 +149,11 @@ export const refundTradingFailError = () =>
 export const inputFormatError = () =>
   new AppError("Unknown error happen!", 500, "F10010001");
 
-  export const queueError = (index) =>
+export const queueError = (index) =>
   new AppError(`Execute queue error at ${index}`, 500, "F10010001");
+
+export const uploadImgError = () =>
+  new AppError("Upload image fail error", 500, "F10010001");
+
+export const tokenExpiredError = () =>
+  new AppError("Token is expired", 401, "F10010001");
