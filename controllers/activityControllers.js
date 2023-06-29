@@ -21,6 +21,29 @@ export const setActivityId = catchAsync(async (req, res, next) => {
   next();
 });
 
+export const getOne = catchAsync(async (req, res, next) => {
+  const features = new queryFeatures(
+    Activity.findById(req.params.id),
+    req.query
+  )
+    .select()
+    .populate()
+    .includeDeleted();
+
+  let data = await features.query;
+  if (!data) throw errorTable.idNotFoundError();
+
+  data = helper.removeDocObjId(data);
+  if (req.query.pop)
+    data = helper.removeFieldsId(data, req.query.pop.split(","));
+
+  // add remain ticket
+  if (req.query.pop?.split(",")?.includes("ticketTypeIds"))
+    data = await ticketListHelper.getRemain(data);
+
+  res.status(200).json({ status: "success", data });
+});
+
 export const getAll = catchAsync(async (req, res, next) => {
   const features = new queryFeatures(Activity.find({}), req.query)
     .filter()
@@ -40,46 +63,7 @@ export const getAll = catchAsync(async (req, res, next) => {
   // add remain ticket
   if (req.query.pop?.split(",")?.includes("ticketTypeIds")) {
     await Promise.all(
-      data.map(async (activity) => {
-        activity.total = 0;
-        activity.remain = 0;
-        return Promise.all(
-          activity?.ticketTypes?.map(async (ticketType) => {
-            activity.total += ticketType.total;
-            const result = await TicketList.aggregate([
-              {
-                $match: {
-                  ticketTypeId: new mongoose.Types.ObjectId(ticketType.id),
-                  deletedAt: null,
-                },
-              },
-              {
-                $group: {
-                  _id: null,
-                  remain: {
-                    $sum: {
-                      $cond: [
-                        {
-                          $or: [
-                            { $eq: ["$ticketId", null] },
-                            { $not: "$ticketId" },
-                          ],
-                        },
-                        1,
-                        0,
-                      ],
-                    },
-                  },
-                },
-              },
-            ]);
-            if (result && result.length === 1) {
-              ticketType.remain = result[0].remain;
-              activity.remain += result[0].remain;
-            } else ticketType.remain = 0;
-          })
-        );
-      })
+      data.map((activity) => ticketListHelper.getRemain(activity))
     );
   }
 
