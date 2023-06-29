@@ -23,6 +23,7 @@ export const authToken = catchAsync(async (req, res, next) => {
     decodeToken = authHelper.decodeJWT(token);
   } catch (err) {
     if (err.message === "jwt expired") throw errorTable.tokenExpiredError();
+    throw err;
   }
 
   // 4) Check if User exist
