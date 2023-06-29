@@ -5,7 +5,9 @@ import systemNotice from "../models/systemNotice.js";
 import activityNotice from "../models/activityNotice.js";
 import * as helper from "../utils/helper/helper.js";
 import catchAsync from "../utils/error/catchAsync.js";
+import * as errorTable from "../utils/error/errorTable.js";
 import queryFeatures from "../utils/helper/queryFeatures.js";
+
 
 export const getHome = catchAsync(async (req, res, next) => {
   const partnerFeatures = new queryFeatures(Partner.find({}), req.query)
