@@ -46,7 +46,7 @@ router
 
 router
   .route("/:id")
-  .get(factory.getOne(Activity))
+  .get(activityControllers.getOne)
   .patch(
     authControllers.authToken,
     activityControllers.setActivityId,
