@@ -18,7 +18,12 @@ export const authToken = catchAsync(async (req, res, next) => {
   if (!token) throw errorTable.AuthFailError();
 
   // 3) Verify token
-  const decodeToken = authHelper.decodeJWT(token);
+  let decodeToken;
+  try {
+    decodeToken = authHelper.decodeJWT(token);
+  } catch (err) {
+    if (err.message === "jwt expired") throw errorTable.tokenExpiredError();
+  }
 
   // 4) Check if User exist
   const user = await User.findById(decodeToken.id);
