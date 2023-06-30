@@ -54,7 +54,7 @@ export const getAll = catchAsync(async (req, res, next) => {
   data.forEach((order) => {
     if (!order.detail) return;
     if (!order.detail.length) return;
-    
+
     order.remainAmount = 0;
     order.detail.forEach((ticketType) => {
       if (!ticketType.ticketIds) return;
@@ -367,9 +367,10 @@ export const confirmOrder = catchAsync(async (req, res) => {
     }
   });
 
-  res
-    .status(200)
-    .json({ status: "success", message: "transaction successfully!" });
+  res.redirect("/");
+  // res
+  //   .status(200)
+  //   .json({ status: "success", message: "transaction successfully!" });
 });
 
 export const cancelOrder = catchAsync((req, res) => {
